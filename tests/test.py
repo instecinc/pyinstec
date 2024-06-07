@@ -1,7 +1,5 @@
 import unittest
 import time
-import sys
-sys.path.insert(1, 'C:/Users/Sales/Documents/pyinstec/instec')
 import instec
 
 mode = instec.mode.ETHERNET
