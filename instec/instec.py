@@ -61,6 +61,9 @@ class unit(Enum):
 
 
 class controller:
+    """All basic communication and SCPI commands to interface with the MK2000B.
+    """
+
     def __init__(self, mode=mode.USB, baudrate=38400, port='COM3'):
         """Initialize any relevant attributes necessary to connect to the
         controller, and define the connection mode.
@@ -132,6 +135,9 @@ class controller:
 
             try:
                 self._tcp_socket.connect((self._controller_address, 50292))
+            except OSError as error:
+                if error.winerror == 10054:
+                    self._tcp_socket.connect((self._controller_address, 50292))
             except Exception as error:
                 raise RuntimeError('Unable to establish '
                                    'TCP connection') from error
@@ -205,7 +211,7 @@ class controller:
         Returns:
             (str, str, str, str): Tuple of system information.
         """
-        data = self._send_command('*IDN?').split(',')
+        data = self._send_command('*IDN?').strip().split(',')
         company = data[0]
         model = data[1]
         serial = data[2]
@@ -268,7 +274,7 @@ class controller:
                             all connected slaves
         """
         pv_raw = self._send_command('TEMP:CTEM?')
-        pv = eval(f'({pv_raw})')
+        pv = eval(f'({pv_raw},)')
         return pv
 
     def get_monitor_values(self):
@@ -279,7 +285,7 @@ class controller:
                             connected slaves
         """
         mv_raw = self._send_command('TEMP:MTEM?')
-        mv = eval(f'({mv_raw})')
+        mv = eval(f'({mv_raw},)')
         return mv
 
     def get_protection_sensors(self):
@@ -289,7 +295,7 @@ class controller:
             (float tuple): Protection sensor value of all connected slaves.
         """
         ps_raw = self._send_command('TEMP:PTEM?')
-        ps = eval(f'({ps_raw})')
+        ps = eval(f'({ps_raw},)')
         return ps
 
     def hold(self, tsp):
@@ -305,7 +311,7 @@ class controller:
         Raises:
             ValueError: If tsp is out of range
         """
-        min, max = self.get_operation_range()
+        max, min = self.get_operation_range()
         if tsp >= min and tsp <= max:
             error = int(self._send_command(f'TEMP:HOLD {tsp}; ERR?'))
             if error == 4:
@@ -331,7 +337,7 @@ class controller:
         Raises:
             ValueError: If tsp is out of range
         """
-        min, max = self.get_operation_range()
+        max, min = self.get_operation_range()
         if tsp >= min and tsp <= max:
             error = int(self._send_command(f'TEMP:RAMP {tsp},{rt}; ERR?'))
             if error == 4:
@@ -401,16 +407,17 @@ class controller:
                     f'TEMP:GPID {state.value},{int(index)}').split(',')
                 state = PID_table(int(pid[0]))
                 index = int(pid[1])
-                p = float(pid[2])
-                i = float(pid[3])
-                d = float(pid[4])
-                return state, index, p, i, d
+                temp = float(pid[2])
+                p = float(pid[3])
+                i = float(pid[4])
+                d = float(pid[5])
+                return state, index, temp, p, i, d
             else:
                 raise ValueError('Index is out of range')
         else:
             raise ValueError('State is invalid')
 
-    def set_pid(self, state, index, p, i, d):
+    def set_pid(self, state, index, temp, p, i, d):
         """Set the PID value in the specified PID table
 
         Args:
@@ -422,17 +429,23 @@ class controller:
 
         Raises:
             ValueError: If PID values are invalid
+            ValueError: If temperature value is out of range
             ValueError: If index is out of range
             ValueError: If state is invalid
         """
         if isinstance(state, PID_table):
             if index >= 0 and index < 8:
-                if p > 0 and i >= 0 and d >= 0:
-                    self._send_command(
-                        f'TEMP:SPID {state.value},{int(index)},{p},{i},{d}',
-                        False)
+                max, min = self.get_operation_range()
+                if temp >= min and temp <= max:
+                    if p > 0 and i >= 0 and d >= 0:
+                        self._send_command(
+                            f'TEMP:SPID {state.value},{int(index)},'
+                            f'{temp},{p},{i},{d}',
+                            False)
+                    else:
+                        raise ValueError('PID value(s) are invalid')
                 else:
-                    raise ValueError('PID value(s) are invalid')
+                    raise ValueError('Temperature value is out of range')
             else:
                 raise ValueError('Index is out of range')
         else:
@@ -446,7 +459,6 @@ class controller:
                                 temperature mode.
         """
         status = self._send_command('TEMP:CHSW?')
-        print(f'Status: {status}')
         return temperature_mode(int(status))
 
     def set_cooling_heating_status(self, status):
@@ -460,7 +472,7 @@ class controller:
             ValueError: If temperature mode is invalid.
         """
         if isinstance(status, temperature_mode):
-            self._send_command(f'TEMP:CHSW {status.value}')
+            self._send_command(f'TEMP:CHSW {status.value}', False)
         else:
             raise ValueError('Temperature mode is invalid')
 
@@ -477,7 +489,6 @@ class controller:
                                                     range of the controller.
         """
         range_raw = self._send_command('TEMP:RTR?')
-        print(f'Range value: {range_raw}')
         range = range_raw.split(',')
         max = float(range[0])
         min = float(range[1])
@@ -551,7 +562,7 @@ class controller:
         Returns:
             str: The serial number of the device.
         """
-        return self._send_command('TEMP:SNUM?')
+        return self._send_command('TEMP:SNUM?').strip()
 
     def get_set_point_temperature(self):
         """Get the Target Set Point (TSP) temperature.
@@ -586,7 +597,7 @@ class controller:
         return float(self._send_command('TEMP:TP?'))
 
     def get_error(self):
-        """Get the current error (see SCPI manual for mroe details).
+        """Get the current error (see SCPI manual for more details).
 
         Returns:
             int: The current error code.

@@ -4,11 +4,11 @@ build-backend = "hatchling.build"
 
 [project]
 name = "instec"
-version = "0.0.1"
+version = "0.0.2"
 authors = [
   { name="Matthew Chen", email="matthew.chen@instec.com" },
 ]
-description = "A small example package"
+description = "A basic implementation of SCPI commands for the MK2000B in Python."
 readme = "README.md"
 requires-python = ">=3.12"
 license = {file = "LICENSE.txt"}
@@ -19,5 +19,5 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/pypa/sampleproject"
-Issues = "https://github.com/pypa/sampleproject/issues"
+Homepage = "https://github.com/MC325/pyinstec"
+Issues = "https://github.com/MC325/pyinstec/issues"
