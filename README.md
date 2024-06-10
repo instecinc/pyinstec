@@ -50,7 +50,7 @@ controller.connect()
 
 If a connection is unable to be established, a RuntimeError will be raised.
 
-After completing , it is recommended to close the connection with the controller:
+After finishing a program, it is recommended to close the connection with the controller:
 ```python
 controller.disconnect()
 ```
@@ -63,7 +63,7 @@ to run a hold command at 50°C using the instantiated controller from above, you
 controller.hold(50.0)
 ```
 
-The following is a table of the 32 SCPI commands available for use with the MK2000B and their Python counterpart implemented in this library:
+The following is a table of the 33 SCPI commands available for use with the MK2000B and their Python counterpart implemented in this library:
 
 | SCPI Command                  | Python Function               | Usage                                     |
 | :---------------------------: |:----------------------------: | :---------------------------------------: |
@@ -100,3 +100,20 @@ The following is a table of the 32 SCPI commands available for use with the MK20
 | TEMPerature:TCUNit?           | get_pv_unit_type()            | Get unit type of PV                       |
 | TEMPerature:TMUNit?           | get_mv_unit_type()            | Get unit type of MV                       |
 | TEMPerature:PRECision?        | get_precision()               | Get the decimal precision of PV and MV    |
+
+### Enums
+
+Unlike the original SCPI implementation, some functions will require enums instead of integers. For example, to set the
+Cooling/Heating mode of the controller to Heating Only using SCPI commands, you would call
+```shell
+TEMPerature:CHSWitch 0
+```
+
+In Python, the same command would be
+```python
+controller.set_cooling_heating_status(instec.temperature_mode.HEATING_ONLY)
+```
+
+The hope is by using enums, it is more obvious what each value accomplishes and parameters are less likely to be incorrectly set.
+
+All enums can be seen in the instec.py file and correspond with their respective integer values in the SCPI command guide.
