@@ -11,10 +11,9 @@ Before using this library, it is highly recommended that you read through the SC
 Documentation for each function is provided with the python file instec.py.
 
 ## Installation
-To install the library, run
-
+Currently, the library is only available on TestPyPI. To install the library, run
 ```shell
-pip install instec
+pip install --index-url https://test.pypi.org/simple/ instec
 ```
 
 ## Usage
