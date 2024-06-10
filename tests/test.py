@@ -1,6 +1,6 @@
 import unittest
 import time
-import instec
+from instec import instec
 
 mode = instec.mode.ETHERNET
 baud = 38400
@@ -31,7 +31,7 @@ class temperature_test(unittest.TestCase):
 
     def _reset_operation_range(self):
         # Reset operation range to stage range
-        s_max, s_min = self._controller._get_stage_range()
+        s_max, s_min = self._controller.get_stage_range()
         self._controller.set_operation_range(s_max, s_min)
         max, min = self._controller.get_operation_range()
         self.assertEqual(max, s_max)
@@ -523,7 +523,7 @@ class temperature_test(unittest.TestCase):
 
     def test_operation_range(self):
 
-        stage_range = self._controller._get_stage_range()
+        stage_range = self._controller.get_stage_range()
         max = stage_range[0]
         min = stage_range[1]
 

@@ -13,11 +13,15 @@ from enum import Enum
 
 
 class mode(Enum):
+    """Enums for connection mode.
+    """
     USB = 0
     ETHERNET = 1
 
 
 class system_status(Enum):
+    """Enums for system status.
+    """
     STOP = 0
     HOLD = 1
     RAMP = 2
@@ -28,12 +32,16 @@ class system_status(Enum):
 
 
 class profile_status(Enum):
+    """Enums for profile status.
+    """
     STOP = 0
     RUN = 1
     PAUSE = 2
 
 
 class PID_table(Enum):
+    """Enums for PID table selection.
+    """
     HEATING_HNC = 0     # Heating in Heating & Cooling (HNC) Mode
     COOLING_HNC = 1     # Cooling in Heating & Cooling (HNC) Mode
     HEATING_HO = 2      # Heating in Heating Only (HO) Mode
@@ -41,12 +49,16 @@ class PID_table(Enum):
 
 
 class temperature_mode(Enum):
+    """Enums for temperature mode selection.
+    """
     HEATING_ONLY = 0
     HEATING_AND_COOLING = 1
     COOLING_ONLY = 2
 
 
 class unit(Enum):
+    """Enums for controller unit usage.
+    """
     CELCIUS = 1
     KELVIN = 2
     FAHRENHEIT = 3
@@ -497,7 +509,7 @@ class controller:
         limit_min = float(range[4])
         return max, min, limit_value, limit_max, limit_min
 
-    def _get_stage_range(self):
+    def get_stage_range(self):
         """Get the stage temperature range.
 
         Returns:
@@ -529,7 +541,7 @@ class controller:
             ValueError: If the max value is smaller than the min value
         """
         if min <= max:
-            smax, smin = self._get_stage_range()
+            smax, smin = self.get_stage_range()
             if min >= smin and max <= smax:
                 self._send_command(f'TEMP:RANG {max},{min}', False)
             else:

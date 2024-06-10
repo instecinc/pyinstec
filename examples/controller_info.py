@@ -2,10 +2,10 @@
 various information from the controller.
 """
 
-import instec   # Import instec library
+from instec import instec   # Import instec library
 import time
 
-# Initialize Serial interface
+# Initialize Serial interface - change mode based on connection type; set baud rate and port for USB mode
 controller = instec.controller(mode=instec.mode.ETHERNET)
 # Attempt to connect to controller
 controller.connect()
