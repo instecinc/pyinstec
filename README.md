@@ -11,11 +11,14 @@ Before using this library, it is highly recommended that you read through the SC
 Documentation for each function is provided with the python file instec.py.
 
 ## Installation
-The Instec library requires pyserial to work. Pyserial can be installed by calling
+Currently, the library only supports version 3.12 of Python, but may change later on to support older versions. It has been tested on Windows 11 in the Visual Studio Code development environment.
+
+The Instec library requires pyserial to work. pyserial can be installed by calling
 ```shell
 pip install pyserial
 ```
 
+After installing pyserial, the instec library can be installed.
 Currently, the library is only available on TestPyPI. To install the library, run
 ```shell
 pip install --index-url https://test.pypi.org/simple/ instec
