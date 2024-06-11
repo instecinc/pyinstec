@@ -148,11 +148,11 @@ class temperature_test(unittest.TestCase):
 
         max, min = self._reset_operation_range()
         for tsp in range(int(min), int(max), int((max - min) / STEP_COUNT)):
+            start_temp = self._controller.get_process_variables()[
+                self._controller.get_operating_slave() - 1]
             self._controller.ramp(tsp, RAMP)
             # Start time and temperature at beginning of ramp
             start_time = time.time()
-            start_temp = self._controller.get_process_variables()[
-                self._controller.get_operating_slave() - 1]
 
             # Delay for updated info
             time.sleep(UPDATE_DELAY)

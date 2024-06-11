@@ -333,7 +333,7 @@ class controller:
             raise ValueError('Set point value is out of range')
 
     def ramp(self, tsp, rt):
-        """Take the desired setpoint (tsp) and ramp rate (rt) as parameters,
+        """Takes the desired setpoint (tsp) and ramp rate (rt) as parameters,
         and will attempt to reach the current setpoint value according to the
         specified ramp rate until it reaches the setpoint. Once it reaches the
         target, it will maintain that value until directed otherwise. Passing a
@@ -359,7 +359,7 @@ class controller:
             raise ValueError('Set point value is out of range')
 
     def rpp(self, pp=0.0):
-        """Take takes the desired power level (PP) as a parameter, and will
+        """Takes the desired power level (PP) as a parameter, and will
         attempt to reach the PP level as fast as possible, and hold that value
         until directed otherwise.
 
@@ -618,6 +618,7 @@ class controller:
 
     def get_operating_slave(self):
         """Get the current operating slave.
+        Operating slaves are 1 indexed, up to a maximum of 4.
 
         Returns:
             int: The number of the current operating slave.
@@ -626,12 +627,13 @@ class controller:
 
     def set_operating_slave(self, slave):
         """Set the current operating slave.
+        Operating slaves are 1 indexed, up to a maximum of 4.
 
         Args:
             slave (int): The number of the operating slave.
 
         Raises:
-            ValueError: If invalid number provided.
+            ValueError: If invalid number provided based on slave count.
         """
         if slave >= 1 and slave <= self.get_slave_count():
             self._send_command(f'TEMP:OPSL {int(slave)}', False)
