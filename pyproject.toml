@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "instec"
-version = "0.0.5"
+version = "0.0.7"
 authors = [
   { name="Matthew Chen", email="matthew.chen@instec.com" },
 ]
@@ -18,7 +18,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-  'pyserial >= 3.0',
+  "pyserial >= 3.0",
 ]
 
 [project.urls]

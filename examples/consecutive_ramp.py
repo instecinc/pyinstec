@@ -14,20 +14,22 @@ controller.connect()
 for rate in rt:
     # Get current PV; we use controller.get_operating_slave() - 1 because
     # slaves are 1 indexed, meaning they start from 1, not 0
-    pv = controller.get_process_variables()[controller.get_operating_slave() - 1]
+    pv = controller.get_process_variables()[
+        controller.get_operating_slave() - 1]
     # Hold at TSP value for specified rate
     controller.ramp(tsp[0], rate)
-    
+
     # Get start time
     start_time = time.time()
-    
+
     # Wait until ramp is done by comparing TSP to current temp and
     # calculating estimated time, then execute next ramp
-    time.sleep(max(abs((tsp[0] - pv) / rate * 60) - (time.time() - start_time), 0))
-    
+    time.sleep(
+        max(abs((tsp[0] - pv) / rate * 60) - (time.time() - start_time), 0))
+
     # Remove old TSP value
     tsp.pop(0)
-    
+
 controller.stop()
 
 controller.disconnect()
