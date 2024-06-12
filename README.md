@@ -28,7 +28,7 @@ pip install --index-url https://test.pypi.org/simple/ instec
 To add the library to your python file, add the import
 
 ```python
-from instec import instec
+import instec
 ```
 
 then you can use the functions associated with the library.
@@ -40,13 +40,13 @@ Then, instantiate the controller.
 
 For USB:
 ```python
-controller = instec.controller(instec.mode.USB, baudrate, port)
+controller = instec.instec(instec.mode.USB, baudrate, port)
 ```
 By default the baud rate and port are 38400 and 'COM3', respectively.
 
 For Ethernet:
 ```python
-controller = instec.controller(instec.mode.ETHERNET)
+controller = instec.instec(instec.mode.ETHERNET)
 ```
 
 Then, to connect to the controller, simply call
