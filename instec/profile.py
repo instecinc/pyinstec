@@ -9,9 +9,8 @@ class profile_status(Enum):
     RUN = 1
     PAUSE = 2
 
+
 class profile(command):
     def get_profile_state(self):
         self._controller._send_command()
         pass
-    
-    

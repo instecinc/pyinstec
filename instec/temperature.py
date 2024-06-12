@@ -27,8 +27,8 @@ class unit(Enum):
     VOLT = 10
     NEWTON = 11
 
+
 class temperature(command):
-    
     def get_system_information(self):
         """Information about the system:
         company (str): Company name
@@ -141,7 +141,8 @@ class temperature(command):
         """
         max, min = self.get_operation_range()
         if tsp >= min and tsp <= max:
-            error = int(self._controller._send_command(f'TEMP:HOLD {tsp}; ERR?'))
+            error = int(
+                self._controller._send_command(f'TEMP:HOLD {tsp}; ERR?'))
             if error == 4:
                 self.stop()
                 raise ValueError('Set point value is out of range')
@@ -167,7 +168,8 @@ class temperature(command):
         """
         max, min = self.get_operation_range()
         if tsp >= min and tsp <= max:
-            error = int(self._controller._send_command(f'TEMP:RAMP {tsp},{rt}; ERR?'))
+            error = int(
+                self._controller._send_command(f'TEMP:RAMP {tsp},{rt}; ERR?'))
             if error == 4:
                 self.stop()
                 raise ValueError('Set point value is out of range')
@@ -394,7 +396,8 @@ class temperature(command):
         """
         if delay >= 0:
             if hold > 0:
-                self._controller._send_command(f'TEMP:PURG {delay},{hold}', False)
+                self._controller._send_command(
+                    f'TEMP:PURG {delay},{hold}', False)
             else:
                 raise ValueError('Hold must be greater than 0')
         else:

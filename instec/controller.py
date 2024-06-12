@@ -4,11 +4,13 @@ import socket
 import sys
 from enum import Enum
 
+
 class mode(Enum):
     """Enums for connection mode.
     """
     USB = 0
     ETHERNET = 1
+
 
 class system_status(Enum):
     """Enums for system status.
@@ -20,6 +22,7 @@ class system_status(Enum):
     PROFILE = 4
     PP = 5
     PURGE = 6
+
 
 class controller:
     """All basic communication and SCPI commands to interface with the MK2000B.
@@ -161,8 +164,7 @@ class controller:
                         pass
         else:
             raise ValueError('Invalid connection mode')
-        
-        
+
     def _send_command(self, command, returns=True):
         """Internal function to process and send SCPI commands via the
         desired communication method.
