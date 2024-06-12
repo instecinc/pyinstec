@@ -1,5 +1,5 @@
-from .controller import controller, mode, system_status
-from .profile import profile_status
+from instec.controller import controller, mode, system_status
+from instec.profile import profile_status
 from enum import Enum
 
 class PID_table(Enum):

@@ -1,6 +1,5 @@
 
 import serial
-import instec
 import socket
 import sys
 from enum import Enum
@@ -26,7 +25,7 @@ class controller:
     """All basic communication and SCPI commands to interface with the MK2000B.
     """
 
-    def __init__(self, mode=instec.mode.USB, baudrate=38400, port='COM3'):
+    def __init__(self, mode=mode.USB, baudrate=38400, port='COM3'):
         """Initialize any relevant attributes necessary to connect to the
         controller, and define the connection mode.
 
@@ -61,12 +60,12 @@ class controller:
             RuntimeError:   If TCP connection cannot be established.
             ValueError:     If invalid connection mode is given.
         """
-        if self._mode == instec.mode.USB:
+        if self._mode == mode.USB:
             try:
                 self._usb.open()
             except serial.SerialException as error:
                 raise RuntimeError('Unable to connect via COM port') from error
-        elif self._mode == instec.mode.ETHERNET:
+        elif self._mode == mode.ETHERNET:
             # See MK2000 Ethernet Communication Guide for more information
             # Obtain controller IP from UDP message
             udp_receiver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -112,9 +111,9 @@ class controller:
         Raises:
             ValueError: If invalid connection mode is given.
         """
-        if self._mode == instec.mode.USB:
+        if self._mode == mode.USB:
             self._usb.close()
-        elif self._mode == instec.mode.ETHERNET:
+        elif self._mode == mode.ETHERNET:
             self._tcp_socket.close()
         else:
             raise ValueError('Invalid connection mode')
@@ -129,9 +128,9 @@ class controller:
         Returns:
             bool: True if connected, False otherwise.
         """
-        if self._mode == instec.mode.USB:
+        if self._mode == mode.USB:
             return self._usb.is_open
-        elif self._mode == instec.mode.ETHERNET:
+        elif self._mode == mode.ETHERNET:
             try:
                 timeout = self._tcp_socket.gettimeout()
                 self._tcp_socket.settimeout(0)
@@ -180,13 +179,13 @@ class controller:
         Returns:
             str: None if returns is False, otherwise the value from recv.
         """
-        if self._mode == instec.mode.USB:
+        if self._mode == mode.USB:
             self._usb.write(str.encode(f'{command}\n'))
             if returns:
                 return self._usb.readline().decode()
             else:
                 return None
-        elif self._mode == instec.mode.ETHERNET:
+        elif self._mode == mode.ETHERNET:
             self._tcp_socket.send(str.encode(f'{command}\n'))
             if returns:
                 try:
