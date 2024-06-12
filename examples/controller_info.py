@@ -15,10 +15,6 @@ print(f'Connected?: {controller.is_connected()}')
 delay = 1.0                               # Delay (in seconds)
 start = time.time()                       # Start time
 
-print(controller.get_pv_unit_type())
-print(isinstance(instec.mode.ETHERNET, instec.mode))
-print(controller.get_pid(instec.PID_table.COOLING_HNC, 5))
-
 for i in range(1):
     # Call system ID function
     company, model, serial, firmware = controller.get_system_information()
