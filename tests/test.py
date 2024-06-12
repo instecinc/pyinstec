@@ -1,6 +1,6 @@
 import unittest
 import time
-from instec import instec
+import instec
 
 mode = instec.mode.ETHERNET
 baud = 38400
@@ -20,7 +20,7 @@ class temperature_test(unittest.TestCase):
 
     def _initialize_controller(self):
         # Initialize and connect to controller
-        self._controller = instec.controller(mode, baud, port)
+        self._controller = instec.instec(mode, baud, port)
         self._controller.connect()
         self.assertTrue(self._controller.is_connected())
 

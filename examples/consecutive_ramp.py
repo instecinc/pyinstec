@@ -1,14 +1,14 @@
 """Simple python program to complete consecutive ramps with varying ramp rates.
 """
 
-from instec import instec
+import instec
 import time
 
 tsp = [50.0, 60.0, 80.0, 90.0]      # In °C
 rt = [30.0, 50.0, 100.0, 20.0]      # In °C/minute
 
 # Initialize controller
-controller = instec.controller(instec.mode.ETHERNET)
+controller = instec.instec(instec.mode.ETHERNET)
 controller.connect()
 
 for rate in rt:
