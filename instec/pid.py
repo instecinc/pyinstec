@@ -79,7 +79,7 @@ class pid(command):
         """
         if isinstance(state, pid_table):
             if index >= 0 and index < 8:
-                if temperature.is_in_operation_range(temp):
+                if temperature.is_in_operation_range(self, temp):
                     if p > 0 and i >= 0 and d >= 0:
                         self._controller._send_command(
                             f'TEMP:SPID {state.value},{int(index)},'

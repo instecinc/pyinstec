@@ -152,14 +152,6 @@ class temperature(command):
         else:
             raise ValueError('Set point value is out of range')
 
-    def is_in_power_range(self, pp: float):
-        status = self.get_cooling_heating_status()
-        return (pp >=
-                (0.0 if status == temperature_mode.HEATING_ONLY else -1.0)
-                and
-                pp <=
-                (0.0 if status == temperature_mode.COOLING_ONLY else 1.0))
-
     def rpp(self, pp: float):
         """Takes the desired power level (PP) as a parameter, and will
         attempt to reach the PP level as fast as possible, and hold that value
@@ -267,13 +259,6 @@ class temperature(command):
                                  'stage temperature range')
         else:
             raise ValueError('max is smaller than min')
-        
-    def is_in_operation_range(self, temp: float):
-        max, min = temperature.get_operation_range()
-        if temp >= min and temp <= max:
-            return True
-        else:
-            return False
 
     def get_default_operation_range(self):
         """Get the default operation temperature range.
@@ -308,10 +293,6 @@ class temperature(command):
             float: The set point temperature in °C.
         """
         return float(self._controller._send_command('TEMP:SPO?'))
-    
-    def is_in_ramp_rate_range(self, rt: float):
-        range = self.get_ramp_rate_range()
-        return rt >= range[1] and rt <= range[0]
 
     def get_ramp_rate(self):
         """Get the Ramp Rate (RT).
@@ -427,3 +408,22 @@ class temperature(command):
         pv_precision = precision[0]
         mv_precision = precision[1]
         return pv_precision, mv_precision
+
+    def is_in_power_range(self, pp: float):
+        status = self.get_cooling_heating_status()
+        return (pp >=
+                (0.0 if status == temperature_mode.HEATING_ONLY else -1.0)
+                and
+                pp <=
+                (0.0 if status == temperature_mode.COOLING_ONLY else 1.0))
+
+    def is_in_ramp_rate_range(self, rt: float):
+        range = self.get_ramp_rate_range()
+        return rt >= range[1] and rt <= range[0]
+
+    def is_in_operation_range(self, temp: float):
+        max, min = self.get_operation_range()
+        if temp >= min and temp <= max:
+            return True
+        else:
+            return False

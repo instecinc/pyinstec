@@ -111,12 +111,12 @@ class profile(command):
                         self._controller._send_command(
                             f'PROF:EDIT:IINS {p},{i},{item.value()}', False)
                     case [profile_item.HOLD, x,
-                          None] if temperature.is_in_operation_range(x):
+                          None] if temperature.is_in_operation_range(self, x):
                         self._controller._send_command(
                             f'PROF:EDIT:IINS {p},{i},'
                             f'{item.value()},{float(b1)}', False)
                     case [profile_item.RPP, x,
-                          None] if temperature.is_in_power_range(x):
+                          None] if temperature.is_in_power_range(self, x):
                         self._controller._send_command(
                             f'PROF:EDIT:IINS {p},{i},'
                             f'{item.value()},{float(b1)}', False)
@@ -126,8 +126,8 @@ class profile(command):
                             f'PROF:EDIT:IINS {p},{i},'
                             f'{item.value()},{float(b1)}', False)
                     case [profile_item.RAMP,
-                          x, y] if (temperature.is_in_operation_range(x)
-                                    and temperature.is_in_ramp_rate_range(y)):
+                          x, y] if (temperature.is_in_operation_range(self, x)
+                                    and temperature.is_in_ramp_rate_range(self, y)):
                         self._controller._send_command(
                             f'PROF:EDIT:IINS {p},{i},'
                             f'{item.value()},{float(b1)},{float(b2)}', False)
