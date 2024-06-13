@@ -1,31 +1,9 @@
-from instec.controller import system_status
-from instec.profile import profile_status
+"""Command set for temperature commands.
+"""
+
+
 from instec.command import command
-from enum import Enum
-
-
-class temperature_mode(Enum):
-    """Enums for temperature mode selection.
-    """
-    HEATING_ONLY = 0
-    HEATING_AND_COOLING = 1
-    COOLING_ONLY = 2
-
-
-class unit(Enum):
-    """Enums for controller unit usage.
-    """
-    CELCIUS = 1
-    KELVIN = 2
-    FAHRENHEIT = 3
-    RELATIVE_HUMIDITY = 4
-    PASCAL = 5
-    BAR = 6
-    POUND_PER_SQUARE_INCH = 7
-    TORR = 8
-    KILOPASCAL = 9
-    VOLT = 10
-    NEWTON = 11
+from instec.constants import temperature_mode, system_status, unit, profile_status
 
 
 class temperature(command):
@@ -126,7 +104,7 @@ class temperature(command):
         ps = eval(f'({ps_raw},)')
         return ps
 
-    def hold(self, tsp):
+    def hold(self, tsp: float):
         """Takes the desired setpoint (tsp) as a parameter, and will attempt
         to reach the TSP as fast as possible, and hold that value until
         directed otherwise. Passing a value outside of the controller's range
@@ -139,17 +117,16 @@ class temperature(command):
         Raises:
             ValueError: If tsp is out of range
         """
-        max, min = self.get_operation_range()
-        if tsp >= min and tsp <= max:
+        if self.is_in_operation_range(tsp):
             error = int(
-                self._controller._send_command(f'TEMP:HOLD {tsp}; ERR?'))
+                self._controller._send_command(f'TEMP:HOLD {float(tsp)}; ERR?'))
             if error == 4:
                 self.stop()
                 raise ValueError('Set point value is out of range')
         else:
             raise ValueError('Set point value is out of range')
 
-    def ramp(self, tsp, rt):
+    def ramp(self, tsp: float, rt: float):
         """Takes the desired setpoint (tsp) and ramp rate (rt) as parameters,
         and will attempt to reach the current setpoint value according to the
         specified ramp rate until it reaches the setpoint. Once it reaches the
@@ -166,29 +143,36 @@ class temperature(command):
         Raises:
             ValueError: If tsp is out of range
         """
-        max, min = self.get_operation_range()
-        if tsp >= min and tsp <= max:
+        if self.is_in_operation_range(tsp):
             error = int(
-                self._controller._send_command(f'TEMP:RAMP {tsp},{rt}; ERR?'))
+                self._controller._send_command(f'TEMP:RAMP {float(tsp)},{float(rt)}; ERR?'))
             if error == 4:
                 self.stop()
                 raise ValueError('Set point value is out of range')
         else:
             raise ValueError('Set point value is out of range')
 
-    def rpp(self, pp=0.0):
+    def is_in_power_range(self, pp: float):
+        status = self.get_cooling_heating_status()
+        return (pp >=
+                (0.0 if status == temperature_mode.HEATING_ONLY else -1.0)
+                and
+                pp <=
+                (0.0 if status == temperature_mode.COOLING_ONLY else 1.0))
+
+    def rpp(self, pp: float):
         """Takes the desired power level (PP) as a parameter, and will
         attempt to reach the PP level as fast as possible, and hold that value
         until directed otherwise.
 
         Args:
-            pp (float, optional): Value between -1.0 and 1.0. Defaults to 0.0.
+            pp (float, optional): Value between -1.0 and 1.0.
 
         Raises:
             ValueError: If pp is out of range.
         """
-        if (pp >= -1.0 and pp <= 1.0):
-            self._controller._send_command(f'TEMP:RPP {pp}', False)
+        if self.is_in_power_range(pp):
+            self._controller._send_command(f'TEMP:RPP {float(pp)}', False)
         else:
             raise ValueError('Power percentage is out of range')
 
@@ -207,7 +191,7 @@ class temperature(command):
         status = self._controller._send_command('TEMP:CHSW?')
         return temperature_mode(int(status))
 
-    def set_cooling_heating_status(self, status):
+    def set_cooling_heating_status(self, status: temperature_mode):
         """Set the temperature control mode of the controller.
 
         Args:
@@ -263,7 +247,7 @@ class temperature(command):
         max, min = self._controller._send_command('TEMP:RANG?').split(',')
         return float(max), float(min)
 
-    def set_operation_range(self, max, min):
+    def set_operation_range(self, max: float, min: float):
         """Set the operation temperature range.
 
         Args:
@@ -277,12 +261,19 @@ class temperature(command):
         if min <= max:
             smax, smin = self.get_stage_range()
             if min >= smin and max <= smax:
-                self._controller._send_command(f'TEMP:RANG {max},{min}', False)
+                self._controller._send_command(f'TEMP:RANG {float(max)},{float(min)}', False)
             else:
                 raise ValueError('Operation temperature range is out of '
                                  'stage temperature range')
         else:
             raise ValueError('max is smaller than min')
+        
+    def is_in_operation_range(self, temp: float):
+        max, min = temperature.get_operation_range()
+        if temp >= min and temp <= max:
+            return True
+        else:
+            return False
 
     def get_default_operation_range(self):
         """Get the default operation temperature range.
@@ -317,6 +308,10 @@ class temperature(command):
             float: The set point temperature in °C.
         """
         return float(self._controller._send_command('TEMP:SPO?'))
+    
+    def is_in_ramp_rate_range(self, rt: float):
+        range = self.get_ramp_rate_range()
+        return rt >= range[1] and rt <= range[0]
 
     def get_ramp_rate(self):
         """Get the Ramp Rate (RT).
@@ -359,7 +354,7 @@ class temperature(command):
         """
         return int(self._controller._send_command('TEMP:OPSL?'))
 
-    def set_operating_slave(self, slave):
+    def set_operating_slave(self, slave: int):
         """Set the current operating slave.
         Operating slaves are 1 indexed, up to a maximum of 4.
 
@@ -382,7 +377,7 @@ class temperature(command):
         """
         return int(self._controller._send_command('TEMP:SLAV?'))
 
-    def purge(self, delay, hold):
+    def purge(self, delay: float, hold: float):
         """Complete a gas purge on the device.
 
         Args:
@@ -397,7 +392,7 @@ class temperature(command):
         if delay >= 0:
             if hold > 0:
                 self._controller._send_command(
-                    f'TEMP:PURG {delay},{hold}', False)
+                    f'TEMP:PURG {float(delay)},{float(hold)}', False)
             else:
                 raise ValueError('Hold must be greater than 0')
         else:

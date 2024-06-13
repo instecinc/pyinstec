@@ -1,3 +1,13 @@
+"""Comprehensive test for the instec library.
+This test set runs every available non-profile function, and takes
+roughly a minute to finish. The STEP_COUNT and UPDATE_DELAY variables
+should be updated accordingly before running this test. STEP_COUNT adjusts
+the number of steps certain tests take within the temperature range of the
+stage, and UPDATE_DELAY accounts for how long the controller takes to
+update values internally. If a test fails due to an assertion error, try
+increasing the UPDATE_DELAY in case your controller takes longer to respond.
+"""
+
 import unittest
 import time
 import instec
@@ -299,15 +309,15 @@ class temperature_test(unittest.TestCase):
             # Determine PID table used
             pid_table_type = None
             if cooling_heating_mode == instec.temperature_mode.COOLING_ONLY:
-                pid_table_type = instec.PID_table.COOLING_CO
+                pid_table_type = instec.pid_table.COOLING_CO
             elif cooling_heating_mode == instec.temperature_mode.HEATING_ONLY:
-                pid_table_type = instec.PID_table.HEATING_HO
+                pid_table_type = instec.pid_table.HEATING_HO
             else:
                 if self._controller.get_process_variables()[
                         self._controller.get_operating_slave() - 1] < tsp:
-                    pid_table_type = instec.PID_table.HEATING_HNC
+                    pid_table_type = instec.pid_table.HEATING_HNC
                 else:
-                    pid_table_type = instec.PID_table.COOLING_HNC
+                    pid_table_type = instec.pid_table.COOLING_HNC
 
             p = None
             i = None
@@ -361,12 +371,12 @@ class temperature_test(unittest.TestCase):
             for index in range(8):
                 # Get a valid PID table entry
                 pid_table = self._controller.get_pid(
-                    instec.PID_table(pid_table_type),
+                    instec.pid_table(pid_table_type),
                     index)
 
                 # Modify values
                 self._controller.set_pid(
-                    instec.PID_table(pid_table_type),
+                    instec.pid_table(pid_table_type),
                     index,
                     pid_table[2],
                     pid_table[3] + 1,
@@ -377,7 +387,7 @@ class temperature_test(unittest.TestCase):
                 time.sleep(UPDATE_DELAY)
 
                 modified = self._controller.get_pid(
-                    instec.PID_table(pid_table_type),
+                    instec.pid_table(pid_table_type),
                     index)
 
                 # Floating point inaccuracy
@@ -393,7 +403,7 @@ class temperature_test(unittest.TestCase):
 
                 # Reset values
                 self._controller.set_pid(
-                    instec.PID_table(pid_table_type),
+                    instec.pid_table(pid_table_type),
                     index,
                     pid_table[2],
                     pid_table[3],
@@ -404,7 +414,7 @@ class temperature_test(unittest.TestCase):
                 time.sleep(UPDATE_DELAY)
 
                 original = self._controller.get_pid(
-                    instec.PID_table(pid_table_type),
+                    instec.pid_table(pid_table_type),
                     index)
 
                 # Floating point inaccuracy
@@ -424,7 +434,7 @@ class temperature_test(unittest.TestCase):
         # Get Invalid PID table entry
         try:
             pid_table = self._controller.get_pid(
-                instec.PID_table(0), 8)
+                instec.pid_table(0), 8)
             self.fail("Function did not raise exception")
         except Exception as error:
             self.assertTrue(isinstance(error, ValueError))
@@ -432,7 +442,7 @@ class temperature_test(unittest.TestCase):
         # Set Invalid PID table entry
         try:
             pid_table = self._controller.set_pid(
-                instec.PID_table(0), 8, max, 1, 1, 1)
+                instec.pid_table(0), 8, max, 1, 1, 1)
             self.fail("Function did not raise exception")
         except Exception as error:
             self.assertTrue(isinstance(error, ValueError))
@@ -440,7 +450,7 @@ class temperature_test(unittest.TestCase):
         # Set Invalid PID table entry
         try:
             pid_table = self._controller.set_pid(
-                instec.PID_table(0), 0, max + 1, 1, 1, 1)
+                instec.pid_table(0), 0, max + 1, 1, 1, 1)
             self.fail("Function did not raise exception")
         except Exception as error:
             self.assertTrue(isinstance(error, ValueError))
@@ -448,7 +458,7 @@ class temperature_test(unittest.TestCase):
         # Set Invalid PID table entry
         try:
             pid_table = self._controller.set_pid(
-                instec.PID_table(0), 0, min - 1, 1, 1, 1)
+                instec.pid_table(0), 0, min - 1, 1, 1, 1)
             self.fail("Function did not raise exception")
         except Exception as error:
             self.assertTrue(isinstance(error, ValueError))
@@ -456,7 +466,7 @@ class temperature_test(unittest.TestCase):
         # Set Invalid PID table entry
         try:
             pid_table = self._controller.set_pid(
-                instec.PID_table(0), 0, max, -1, 1, 1)
+                instec.pid_table(0), 0, max, -1, 1, 1)
             self.fail("Function did not raise exception")
         except Exception as error:
             self.assertTrue(isinstance(error, ValueError))
@@ -464,7 +474,7 @@ class temperature_test(unittest.TestCase):
         # Set Invalid PID table entry
         try:
             pid_table = self._controller.set_pid(
-                instec.PID_table(0), 0, max, 1, -1, 1)
+                instec.pid_table(0), 0, max, 1, -1, 1)
             self.fail("Function did not raise exception")
         except Exception as error:
             self.assertTrue(isinstance(error, ValueError))
@@ -472,7 +482,7 @@ class temperature_test(unittest.TestCase):
         # Set Invalid PID table entry
         try:
             pid_table = self._controller.set_pid(
-                instec.PID_table(0), 0, max, 1, 1, -1)
+                instec.pid_table(0), 0, max, 1, 1, -1)
             self.fail("Function did not raise exception")
         except Exception as error:
             self.assertTrue(isinstance(error, ValueError))

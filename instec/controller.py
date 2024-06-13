@@ -2,33 +2,14 @@
 import serial
 import socket
 import sys
-from enum import Enum
-
-
-class mode(Enum):
-    """Enums for connection mode.
-    """
-    USB = 0
-    ETHERNET = 1
-
-
-class system_status(Enum):
-    """Enums for system status.
-    """
-    STOP = 0
-    HOLD = 1
-    RAMP = 2
-    PAUSE = 3
-    PROFILE = 4
-    PP = 5
-    PURGE = 6
+from instec.constants import mode
 
 
 class controller:
     """All basic communication and SCPI commands to interface with the MK2000B.
     """
 
-    def __init__(self, mode=mode.USB, baudrate=38400, port='COM3'):
+    def __init__(self, conn_mode=mode.USB, baudrate=38400, port='COM3'):
         """Initialize any relevant attributes necessary to connect to the
         controller, and define the connection mode.
 
@@ -43,7 +24,7 @@ class controller:
         Raises:
             ValueError: If invalid connection mode is given.
         """
-        self._mode = mode
+        self._mode = conn_mode
         if self._mode == mode.USB:
             self._usb = serial.Serial()
             self._usb.baudrate = baudrate
