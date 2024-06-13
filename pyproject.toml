@@ -10,7 +10,7 @@ authors = [
 ]
 description = "A basic implementation of SCPI commands for the MK2000B in Python."
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 license = {file = "LICENSE.txt"}
 classifiers = [
     "Programming Language :: Python :: 3",

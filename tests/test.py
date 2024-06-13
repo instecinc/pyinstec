@@ -305,12 +305,12 @@ class temperature_test(unittest.TestCase):
             time.sleep(UPDATE_DELAY)
 
             current = self._controller.get_current_pid()
-            cooling_heating_mode = self._controller.get_cooling_heating_status()
+            mode = self._controller.get_cooling_heating_status()
             # Determine PID table used
             pid_table_type = None
-            if cooling_heating_mode == instec.temperature_mode.COOLING_ONLY:
+            if mode == instec.temperature_mode.COOLING_ONLY:
                 pid_table_type = instec.pid_table.COOLING_CO
-            elif cooling_heating_mode == instec.temperature_mode.HEATING_ONLY:
+            elif mode == instec.temperature_mode.HEATING_ONLY:
                 pid_table_type = instec.pid_table.HEATING_HO
             else:
                 if self._controller.get_process_variables()[

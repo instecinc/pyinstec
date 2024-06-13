@@ -4,7 +4,7 @@
 
 from instec.command import command
 from instec.constants import pid_table
-from instec.temperature import temperature 
+from instec.temperature import temperature
 
 
 class pid(command):

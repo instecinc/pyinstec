@@ -8,15 +8,18 @@ import time
 # Initialize Serial interface - change mode based on connection type
 # set baud rate and port for USB mode
 controller = instec.instec(mode=instec.mode.ETHERNET)
+
 # Attempt to connect to controller
 controller.connect()
-# Check connection
+
+# Check connection - should be True
 print(f'Connected?: {controller.is_connected()}')
 
 delay = 1.0                               # Delay (in seconds)
 start = time.time()                       # Start time
 
-for i in range(1):
+# Adjust range to run this loop more than once
+for i in range(10):
     # Call system ID function
     company, model, serial, firmware = controller.get_system_information()
     print(f'Company: {company}\n'
@@ -63,7 +66,8 @@ for i in range(1):
     # Attempt to call the function every delay amount
     time.sleep(delay - ((time.time() - start) % delay))
 
+# Disconnect the controller
 controller.disconnect()
 
-# Check connection
+# Check connection - should be False
 print(f'Connected?: {controller.is_connected()}')

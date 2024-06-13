@@ -3,7 +3,8 @@
 
 
 from instec.command import command
-from instec.constants import temperature_mode, system_status, unit, profile_status
+from instec.constants import (temperature_mode, system_status,
+                              unit, profile_status)
 
 
 class temperature(command):
@@ -119,7 +120,8 @@ class temperature(command):
         """
         if self.is_in_operation_range(tsp):
             error = int(
-                self._controller._send_command(f'TEMP:HOLD {float(tsp)}; ERR?'))
+                self._controller._send_command(
+                    f'TEMP:HOLD {float(tsp)}; ERR?'))
             if error == 4:
                 self.stop()
                 raise ValueError('Set point value is out of range')
@@ -145,7 +147,8 @@ class temperature(command):
         """
         if self.is_in_operation_range(tsp):
             error = int(
-                self._controller._send_command(f'TEMP:RAMP {float(tsp)},{float(rt)}; ERR?'))
+                self._controller._send_command(
+                    f'TEMP:RAMP {float(tsp)},{float(rt)}; ERR?'))
             if error == 4:
                 self.stop()
                 raise ValueError('Set point value is out of range')
@@ -253,7 +256,8 @@ class temperature(command):
         if min <= max:
             smax, smin = self.get_stage_range()
             if min >= smin and max <= smax:
-                self._controller._send_command(f'TEMP:RANG {float(max)},{float(min)}', False)
+                self._controller._send_command(
+                    f'TEMP:RANG {float(max)},{float(min)}', False)
             else:
                 raise ValueError('Operation temperature range is out of '
                                  'stage temperature range')
