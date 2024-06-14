@@ -156,8 +156,20 @@ class profile(command):
         else:
             raise ValueError('Invalid profile')
 
+    def add_profile_item(self, p: int, item: profile_item,
+                            b1: float = None, b2: float = None):
+        """Functions like insert_profile_item, but only inserts items at the end of the profile.
+
+        Args:
+            p (int): Selected profile
+            item (profile_item): Item instruction type
+            b1 (float, optional): Optional parameter 1
+            b2 (float, optional): Optional parameter 2
+        """
+        self.insert_profile_item(p, self.get_profile_item_count(), item, b1, b2)
+
     def get_profile_item(self, p: int, i: int):
-        """Insert the selected item into the selected profile.
+        """Get the selected item from the selected profile.
         Profiles are zero-indexed, ranging from 0 to 4, inclusive, but
         the default names are one-indexed (i.e. 0 corresponds with
         1 Profile, 1 corresponds with 2 Profile, etc.).
@@ -166,6 +178,9 @@ class profile(command):
         Args:
             p (int): Selected profile
             i (int): Selected item index
+        
+        Returns:
+            (profile_item, float, float): Profile item tuple
         """
         if self._is_valid_profile(p):
             if self._is_valid_item_index(i):
@@ -243,16 +258,27 @@ class profile(command):
             raise ValueError('Invalid profile')
 
     def get_profile_item_count(self, p: int):
+        """Get the number of items in the selected profile.
+
+        Args:
+            p (int): Selected profile
+
+        Raises:
+            ValueError: If p is invalid
+
+        Returns:
+            int: Number of items
+        """
         if self._is_valid_profile(p):
             return int(self._controller._send_command(
-                f'PROF:EDIT:ICO {p}'))
+                f'PROF:EDIT:ICO {int(p)}'))
         else:
             raise ValueError('Invalid profile')
 
     def get_profile_name(self, p: int):
         if self._is_valid_profile(p):
             return self._controller._send_command(
-                f'PROF:EDIT:GNAM {p}').strip()
+                f'PROF:EDIT:GNAM {int(p)}').strip()
         else:
             raise ValueError('Invalid profile')
 
@@ -260,7 +286,7 @@ class profile(command):
         if self._is_valid_profile(p):
             if len(name) < 15:
                 self._controller._send_command(
-                    f'PROF:EDIT:SNAM {p},"{name}"', False)
+                    f'PROF:EDIT:SNAM {int(p)},"{str(name)}"', False)
             else:
                 raise ValueError('Name is too long')
         else:
