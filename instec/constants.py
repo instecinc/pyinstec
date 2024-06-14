@@ -65,9 +65,10 @@ class profile_item(Enum):
     LOOP_END = 5
     PURGE = 6
     STOP = 7
-    COOLING_ON = 8
-    COOLING_OFF = 9
+    HEATING_AND_COOLING = 8
+    HEATING_ONLY = 9
     RPP = 10
+    COOLING_ONLY = 11
 
 
 class pid_table(Enum):

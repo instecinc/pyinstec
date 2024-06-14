@@ -21,7 +21,7 @@ class profile(command):
             (profile_status, int, int): Profile tuple
         """
         info = self._controller._send_command('PROF:RTST?').split(',')
-        p_status = profile_status(info[0])
+        p_status = profile_status(int(info[0]))
         p = int(info[1])
         i = int(info[2])
 
@@ -113,8 +113,9 @@ class profile(command):
                     case [profile_item.END
                           | profile_item.LOOP_END
                           | profile_item.STOP
-                          | profile_item.COOLING_ON
-                          | profile_item.COOLING_OFF, None, None]:
+                          | profile_item.HEATING_AND_COOLING
+                          | profile_item.HEATING_ONLY
+                          | profile_item.COOLING_ONLY, None, None]:
                         self._controller._send_command(
                             f'PROF:EDIT:IINS {p},{i},{item.value}', False)
                     case [profile_item.HOLD, x,
@@ -186,10 +187,13 @@ class profile(command):
         """
         if self._is_valid_profile(p):
             if self._is_valid_item_index(i):
-                item = self._controller._send_command(
-                    f'PROF:EDIT:IRE {p},{i}')
+                item_raw = self._controller._send_command(
+                    f'PROF:EDIT:IRE {p},{i}').split(',')
+                item = profile_item(int(item_raw[0]))
+                b1 = None if len(item_raw) < 2 else float(item_raw[1])
+                b2 = None if len(item_raw) < 3 else float(item_raw[2])
 
-                return profile_item(item[0]), float(item[1]), float(item[2])
+                return item, b1, b2
             else:
                 raise ValueError('Invalid item index')
         else:
@@ -216,8 +220,9 @@ class profile(command):
                     case [profile_item.END
                           | profile_item.LOOP_END
                           | profile_item.STOP
-                          | profile_item.COOLING_ON
-                          | profile_item.COOLING_OFF, None, None]:
+                          | profile_item.HEATING_AND_COOLING
+                          | profile_item.HEATING_ONLY
+                          | profile_item.COOLING_ONLY, None, None]:
                         self._controller._send_command(
                             f'PROF:EDIT:IED {p},{i},{item.value}', False)
                     case [profile_item.HOLD, x,

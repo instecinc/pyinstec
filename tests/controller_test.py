@@ -1,3 +1,8 @@
+"""controller_test.py defines helper functions for all
+other tests.
+"""
+
+
 import unittest
 import instec
 

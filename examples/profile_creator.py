@@ -20,6 +20,7 @@ print('All profiles are full' if selected_profile is None
 
 if selected_profile is None:
     selected_profile = int(input("Select profile: "))
+    controller.delete_profile(selected_profile)
 
 controller.set_profile_name(selected_profile, input("Set profile name: "))
 
