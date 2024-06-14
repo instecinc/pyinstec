@@ -35,18 +35,18 @@ then you can use the functions associated with the library.
 
 ### Connection
 
-To connect to the MK2000B controller, first choose whether to connect over USB or Ethernet, and setup the connection to the device over the desired connection type.
+To connect to the MK2000/B controller, first choose whether to connect over USB or Ethernet, and setup the connection to the device over the desired connection type.
 Then, instantiate the controller.
 
 For USB:
 ```python
-controller = instec.instec(instec.mode.USB, baudrate, port)
+controller = instec.MK2000(instec.mode.USB, baudrate, port)
 ```
 By default the baud rate and port are 38400 and 'COM3', respectively.
 
 For Ethernet:
 ```python
-controller = instec.instec(instec.mode.ETHERNET)
+controller = instec.MK2000(instec.mode.ETHERNET)
 ```
 
 Then, to connect to the controller, simply call
