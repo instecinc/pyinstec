@@ -7,7 +7,7 @@ import time
 
 # Initialize Serial interface - change mode based on connection type
 # set baud rate and port for USB mode
-controller = instec.instec(instec.mode.USB)
+controller = instec.MK2000(instec.mode.USB)
 
 # Attempt to connect to controller
 controller.connect()

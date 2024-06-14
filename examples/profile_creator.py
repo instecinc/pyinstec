@@ -4,7 +4,11 @@ import instec
 INCREMENT = 20
 WAIT_TIME = 1
 
-controller = instec.instec(instec.mode.USB)
+MODE = instec.mode.USB      # Connection mode
+BAUD = 38400                # Baud rate for USB mode
+PORT = 'COM3'               # Port for USB mode
+
+controller = instec.MK2000(MODE, BAUD, PORT)
 
 controller.connect()
 

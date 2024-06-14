@@ -6,5 +6,5 @@ from instec.profile import profile
 from instec.pid import pid
 
 
-class instec(temperature, profile, pid):
+class MK2000(temperature, profile, pid):
     pass

@@ -86,7 +86,7 @@ class profile(command):
         if self._is_valid_profile(p):
             if self._is_valid_item_index(i):
                 self._controller._send_command(
-                    f'PROF:EDIT:PDEL {p},{i}', False)
+                    f'PROF:EDIT:IDEL {p},{i}', False)
             else:
                 raise ValueError('Invalid item index')
         else:

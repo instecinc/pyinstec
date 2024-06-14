@@ -8,7 +8,7 @@ tsp = [50.0, 60.0, 80.0, 90.0]      # In °C
 rt = [30.0, 50.0, 100.0, 20.0]      # In °C/minute
 
 # Initialize controller
-controller = instec.instec(instec.mode.ETHERNET)
+controller = instec.MK2000(instec.mode.ETHERNET)
 controller.connect()
 
 for rate in rt:

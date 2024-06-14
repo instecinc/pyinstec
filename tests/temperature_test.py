@@ -1,4 +1,4 @@
-"""Comprehensive test for the instec library.
+"""Comprehensive temperature test for the instec library.
 This test set runs every available non-profile function, and takes
 roughly a minute to finish. The STEP_COUNT and UPDATE_DELAY variables
 should be updated accordingly before running this test. STEP_COUNT adjusts
@@ -16,6 +16,7 @@ from controller_test import controller_test
 
 class temperature_test(controller_test):
     def test_rtin(self):
+        self._reset_cooling_heating()
         max, min = self._reset_operation_range()
         for tsp in self._create_temp_range(max, min):
             self._controller.ramp(tsp, self.RAMP)

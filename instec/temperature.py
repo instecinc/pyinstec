@@ -413,6 +413,15 @@ class temperature(command):
         mv_precision = precision[1]
         return pv_precision, mv_precision
 
+    def get_process_variable(self):
+        return self.get_process_variables()[self.get_operating_slave() - 1]
+    
+    def get_monitor_value(self):
+        return self.get_monitor_values()[self.get_operating_slave() - 1]
+    
+    def get_protection_sensor(self):
+        return self.get_protection_sensors()[self.get_operating_slave() - 1]
+
     def get_power_range(self):
         status = self.get_cooling_heating_status()
         min = 0.0 if status == temperature_mode.HEATING_ONLY else -1.0

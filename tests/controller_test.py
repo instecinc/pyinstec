@@ -12,19 +12,23 @@ class controller_test(unittest.TestCase):
     BAUD = 38400
     PORT = 'COM3'
 
-    UPDATE_DELAY = 0.2   # in seconds, so queries don't read old values
+    UPDATE_DELAY = 0.25   # in seconds, so queries don't read old values
     STEP_COUNT = 8       # Number of steps for each TSP loop
     RAMP = 5
 
     def setUp(self):
+        """Called at the start of each test.
+        """
         self._initialize_controller()
 
     def tearDown(self):
+        """Called at the end of each test.
+        """
         self._shutdown_controller()
 
     def _initialize_controller(self):
         # Initialize and connect to controller
-        self._controller = instec.instec(self.MODE, self.BAUD, self.PORT)
+        self._controller = instec.MK2000(self.MODE, self.BAUD, self.PORT)
         self._controller.connect()
         self.assertTrue(self._controller.is_connected())
 
