@@ -165,7 +165,14 @@ class controller:
         if self._mode == mode.USB:
             self._usb.write(str.encode(f'{command}\n'))
             if returns:
-                return self._usb.readline().decode()
+                buffer = self._usb.readline().decode()
+                # Buffer must check if the returned string ends with \r\n,
+                # otherwise it is possible the entire result was not sent
+                # and readline should be called until the entire result is
+                # received.
+                while not buffer.endswith('\r\n'):
+                        buffer += self._usb.readline().decode()
+                return buffer
             else:
                 return None
         elif self._mode == mode.ETHERNET:
