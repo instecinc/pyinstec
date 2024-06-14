@@ -1,6 +1,5 @@
-"""All defined constants.
+"""All defined enums used in each command set.
 """
-
 
 from enum import Enum
 
@@ -57,6 +56,8 @@ class profile_status(Enum):
 
 
 class profile_item(Enum):
+    """Enums for profile item instruction type.
+    """
     END = 0
     HOLD = 1
     RAMP = 2

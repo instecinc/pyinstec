@@ -8,6 +8,9 @@ from instec.temperature import temperature
 
 
 class pid(command):
+    """All PID related commands.
+    """
+    
     def get_current_pid(self):
         """Get the current PID value.
         p (float): The proportional value

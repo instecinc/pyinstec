@@ -1,3 +1,6 @@
+"""Class that contains all of the functions setting up the connection
+with the MK2000/MK2000B controller itself.
+"""
 
 import serial
 import socket
@@ -6,7 +9,7 @@ from instec.constants import mode
 
 
 class controller:
-    """All basic communication and SCPI commands to interface with the MK2000B.
+    """All basic communication functions to interface with the MK2000B.
     """
 
     def __init__(self, conn_mode: mode = mode.USB,
@@ -15,7 +18,7 @@ class controller:
         controller, and define the connection mode.
 
         Args:
-            mode (mode, optional):    USB or Ethernet connection mode.
+            conn_mode (mode, optional):    USB or Ethernet connection mode.
                                         Defaults to mode.USB.
             baudrate (int, optional):   Baud rate (for USB only).
                                         Defaults to 38400.

@@ -1,35 +1,43 @@
-"""Simple python program to complete consecutive ramps with varying ramp rates.
+"""Python program that executes several consecutive
+RAMP commands, delaying the next RAMP command based on
+the estimated time to finish.
 """
 
 import instec
 import time
 
-tsp = [50.0, 60.0, 80.0, 90.0]      # In °C
-rt = [30.0, 50.0, 100.0, 20.0]      # In °C/minute
 
-# Initialize controller
-controller = instec.MK2000(instec.mode.ETHERNET)
+# Variables for setting up the controller
+MODE = instec.mode.USB      # Connection mode
+BAUD = 38400                # Baud rate for USB mode
+PORT = 'COM3'               # Port for USB mode
+
+# Initialize controller and connect
+controller = instec.MK2000(MODE, BAUD, PORT)
 controller.connect()
 
+# Define the set of TSP and RT values to use
+tsp = [50.0, 60.0, 80.0, 90.0]      # In °C
+rt = [30.0, 50.0, 80.0, 20.0]      # In °C/minute
+
+# For each RT value:
 for rate in rt:
-    # Get current PV; we use controller.get_operating_slave() - 1 because
-    # slaves are 1 indexed, meaning they start from 1, not 0
-    pv = controller.get_process_variables()[
-        controller.get_operating_slave() - 1]
-    # Hold at TSP value for specified rate
+    # Get current PV
+    pv = controller.get_process_variable()
+    # RAMP to TSP value at specified RT
     controller.ramp(tsp[0], rate)
 
-    # Get start time
-    start_time = time.time()
-
-    # Wait until ramp is done by comparing TSP to current temp and
-    # calculating estimated time, then execute next ramp
-    time.sleep(
-        max(abs((tsp[0] - pv) / rate * 60) - (time.time() - start_time), 0))
+    # Wait until RAMP is done by calculating the estimated time
+    # based on RT and the temperature delta, then execute next RAMP
+    time.sleep(abs((tsp[0] - pv) / rate * 60))
 
     # Remove old TSP value
     tsp.pop(0)
 
+# Stop the RAMP command
+print('Stopping RAMP command')
 controller.stop()
 
+# Disconnect the controller
+print('Disconnecting the controller')
 controller.disconnect()

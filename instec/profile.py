@@ -8,6 +8,9 @@ from instec.temperature import temperature
 
 
 class profile(command):
+    """All profile related commands.
+    """
+    
     PROFILE_NUM = 5
     ITEM_NUM = 255
 

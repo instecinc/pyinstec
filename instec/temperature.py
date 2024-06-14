@@ -8,6 +8,9 @@ from instec.constants import (temperature_mode, system_status,
 
 
 class temperature(command):
+    """All temperature related commands.
+    """
+    
     def get_system_information(self):
         """Information about the system:
         company (str): Company name
@@ -414,29 +417,73 @@ class temperature(command):
         return pv_precision, mv_precision
 
     def get_process_variable(self):
+        """Get the process variable of the current operating slave.
+
+        Returns:
+            float: Process variable
+        """
         return self.get_process_variables()[self.get_operating_slave() - 1]
     
     def get_monitor_value(self):
+        """Get the monitor value of the current operating slave.
+
+        Returns:
+            float: Monitor value
+        """
         return self.get_monitor_values()[self.get_operating_slave() - 1]
     
     def get_protection_sensor(self):
+        """Get the Protection sensor of the current operating slave.
+
+        Returns:
+            float: Protection sensor
+        """
         return self.get_protection_sensors()[self.get_operating_slave() - 1]
 
     def get_power_range(self):
+        """ Get the power range.
+
+        Returns:
+            (float, float): max and min power range values.
+        """
         status = self.get_cooling_heating_status()
         min = 0.0 if status == temperature_mode.HEATING_ONLY else -1.0
         max = 0.0 if status == temperature_mode.COOLING_ONLY else 1.0
         return max, min
 
     def is_in_power_range(self, pp: float):
+        """Check if pp value is in power range.
+
+        Args:
+            pp (float): Power percent
+
+        Returns:
+            bool: True if in range, False otherwise
+        """
         max, min = self.get_power_range()
         return pp >= min and pp <= max
 
     def is_in_ramp_rate_range(self, rt: float):
+        """Check if rt value is in ramp rate range.
+
+        Args:
+            rt (float): Ramp rate
+
+        Returns:
+            bool: True if in range, False otherwise
+        """
         range = self.get_ramp_rate_range()
         return rt >= range[1] and rt <= range[0]
 
     def is_in_operation_range(self, temp: float):
+        """Check if temp value is in operation range.
+
+        Args:
+            temp (float): Temperature
+
+        Returns:
+            bool: True if in range, False otherwise
+        """
         max, min = self.get_operation_range()
         if temp >= min and temp <= max:
             return True

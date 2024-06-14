@@ -18,9 +18,9 @@ controller.connect()
 
 # Define TSP and wait time
 TSP = 50        # In °C
-TIME = 10      # In seconds
+TIME = 10       # In seconds
 
-# Execute a hold command
+# Execute a HOLD command
 print(f'Executing HOLD at {TSP}°C')
 controller.hold(TSP)
 
@@ -29,13 +29,13 @@ print(f'Wait for {TIME} seconds')
 time.sleep(TIME)
 
 # Check if TSP value is still the same
-print(f'Is the TSP value the same? {TSP == controller.get_set_point_temperature()}')
+print(f'TSP value the same? {TSP == controller.get_set_point_temperature()}')
 
 # Output the current PV by getting the temperature of all PVs
 # and selecting the temperature of the current operating slave
 print(f'Current PV temperature: {controller.get_process_variable()}')
 
-# Stop the hold command
+# Stop the HOLD command
 print('Stopping HOLD command')
 controller.stop()
 
