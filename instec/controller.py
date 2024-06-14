@@ -9,7 +9,8 @@ class controller:
     """All basic communication and SCPI commands to interface with the MK2000B.
     """
 
-    def __init__(self, conn_mode=mode.USB, baudrate=38400, port='COM3'):
+    def __init__(self, conn_mode: mode = mode.USB,
+                 baudrate: int = 38400, port: str = 'COM3'):
         """Initialize any relevant attributes necessary to connect to the
         controller, and define the connection mode.
 
@@ -171,7 +172,7 @@ class controller:
                 # and readline should be called until the entire result is
                 # received.
                 while not buffer.endswith('\r\n'):
-                        buffer += self._usb.readline().decode()
+                    buffer += self._usb.readline().decode()
                 return buffer
             else:
                 return None

@@ -413,13 +413,15 @@ class temperature(command):
         mv_precision = precision[1]
         return pv_precision, mv_precision
 
-    def is_in_power_range(self, pp: float):
+    def get_power_range(self):
         status = self.get_cooling_heating_status()
-        return (pp >=
-                (0.0 if status == temperature_mode.HEATING_ONLY else -1.0)
-                and
-                pp <=
-                (0.0 if status == temperature_mode.COOLING_ONLY else 1.0))
+        min = 0.0 if status == temperature_mode.HEATING_ONLY else -1.0
+        max = 0.0 if status == temperature_mode.COOLING_ONLY else 1.0
+        return max, min
+
+    def is_in_power_range(self, pp: float):
+        max, min = self.get_power_range()
+        return pp >= min and pp <= max
 
     def is_in_ramp_rate_range(self, rt: float):
         range = self.get_ramp_rate_range()

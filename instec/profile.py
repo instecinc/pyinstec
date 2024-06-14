@@ -116,39 +116,39 @@ class profile(command):
                           | profile_item.COOLING_ON
                           | profile_item.COOLING_OFF, None, None]:
                         self._controller._send_command(
-                            f'PROF:EDIT:IINS {p},{i},{item.value()}', False)
+                            f'PROF:EDIT:IINS {p},{i},{item.value}', False)
                     case [profile_item.HOLD, x,
                           None] if temperature.is_in_operation_range(self, x):
                         self._controller._send_command(
                             f'PROF:EDIT:IINS {p},{i},'
-                            f'{item.value()},{float(b1)}', False)
+                            f'{item.value},{float(b1)}', False)
                     case [profile_item.RPP, x,
                           None] if temperature.is_in_power_range(self, x):
                         self._controller._send_command(
                             f'PROF:EDIT:IINS {p},{i},'
-                            f'{item.value()},{float(b1)}', False)
+                            f'{item.value},{float(b1)}', False)
                     case [profile_item.WAIT, x,
                           None] if x >= 0.0:
                         self._controller._send_command(
                             f'PROF:EDIT:IINS {p},{i},'
-                            f'{item.value()},{float(b1)}', False)
+                            f'{item.value},{float(b1)}', False)
                     case [profile_item.LOOP_BEGIN, x,
                           None] if x >= 0:
                         self._controller._send_command(
                             f'PROF:EDIT:IINS {p},{i},'
-                            f'{item.value()},{int(b1)}', False)
+                            f'{item.value},{int(b1)}', False)
                     case [profile_item.RAMP,
                           x, y] if (
                               temperature.is_in_operation_range(self, x)
                               and temperature.is_in_ramp_rate_range(self, y)):
                         self._controller._send_command(
                             f'PROF:EDIT:IINS {p},{i},'
-                            f'{item.value()},{float(b1)},{float(b2)}', False)
+                            f'{item.value},{float(b1)},{float(b2)}', False)
                     case [profile_item.PURGE,
                           x, y] if x >= 0.0 and y > 0.0:
                         self._controller._send_command(
                             f'PROF:EDIT:IINS {p},{i},'
-                            f'{item.value()},{float(b1)},{float(b2)}', False)
+                            f'{item.value},{float(b1)},{float(b2)}', False)
                     case _:
                         raise ValueError('Invalid item/parameters')
             else:
@@ -157,8 +157,9 @@ class profile(command):
             raise ValueError('Invalid profile')
 
     def add_profile_item(self, p: int, item: profile_item,
-                            b1: float = None, b2: float = None):
-        """Functions like insert_profile_item, but only inserts items at the end of the profile.
+                         b1: float = None, b2: float = None):
+        """Functions like insert_profile_item,
+        but only inserts items at the end of the profile.
 
         Args:
             p (int): Selected profile
@@ -166,7 +167,8 @@ class profile(command):
             b1 (float, optional): Optional parameter 1
             b2 (float, optional): Optional parameter 2
         """
-        self.insert_profile_item(p, self.get_profile_item_count(), item, b1, b2)
+        self.insert_profile_item(
+            p, self.get_profile_item_count(p), item, b1, b2)
 
     def get_profile_item(self, p: int, i: int):
         """Get the selected item from the selected profile.
@@ -178,7 +180,7 @@ class profile(command):
         Args:
             p (int): Selected profile
             i (int): Selected item index
-        
+
         Returns:
             (profile_item, float, float): Profile item tuple
         """
@@ -217,39 +219,39 @@ class profile(command):
                           | profile_item.COOLING_ON
                           | profile_item.COOLING_OFF, None, None]:
                         self._controller._send_command(
-                            f'PROF:EDIT:IED {p},{i},{item.value()}', False)
+                            f'PROF:EDIT:IED {p},{i},{item.value}', False)
                     case [profile_item.HOLD, x,
                           None] if temperature.is_in_operation_range(self, x):
                         self._controller._send_command(
                             f'PROF:EDIT:IED {p},{i},'
-                            f'{item.value()},{float(b1)}', False)
+                            f'{item.value},{float(b1)}', False)
                     case [profile_item.RPP, x,
                           None] if temperature.is_in_power_range(self, x):
                         self._controller._send_command(
                             f'PROF:EDIT:IED {p},{i},'
-                            f'{item.value()},{float(b1)}', False)
+                            f'{item.value},{float(b1)}', False)
                     case [profile_item.WAIT, x,
                           None] if x >= 0.0:
                         self._controller._send_command(
                             f'PROF:EDIT:IED {p},{i},'
-                            f'{item.value()},{float(b1)}', False)
+                            f'{item.value},{float(b1)}', False)
                     case [profile_item.LOOP_BEGIN, x,
                           None] if x >= 0:
                         self._controller._send_command(
                             f'PROF:EDIT:IED {p},{i},'
-                            f'{item.value()},{int(b1)}', False)
+                            f'{item.value},{int(b1)}', False)
                     case [profile_item.RAMP,
                           x, y] if (
                               temperature.is_in_operation_range(self, x)
                               and temperature.is_in_ramp_rate_range(self, y)):
                         self._controller._send_command(
                             f'PROF:EDIT:IED {p},{i},'
-                            f'{item.value()},{float(b1)},{float(b2)}', False)
+                            f'{item.value},{float(b1)},{float(b2)}', False)
                     case [profile_item.PURGE,
                           x, y] if x >= 0.0 and y > 0.0:
                         self._controller._send_command(
                             f'PROF:EDIT:IED {p},{i},'
-                            f'{item.value()},{float(b1)},{float(b2)}', False)
+                            f'{item.value},{float(b1)},{float(b2)}', False)
                     case _:
                         raise ValueError('Invalid item/parameters')
             else:
@@ -264,18 +266,29 @@ class profile(command):
             p (int): Selected profile
 
         Raises:
-            ValueError: If p is invalid
+            ValueError: If profile is invalid
 
         Returns:
             int: Number of items
         """
         if self._is_valid_profile(p):
             return int(self._controller._send_command(
-                f'PROF:EDIT:ICO {int(p)}'))
+                f'PROF:EDIT:IC {int(p)}'))
         else:
             raise ValueError('Invalid profile')
 
     def get_profile_name(self, p: int):
+        """Get the profile name of the selected profile.
+
+        Args:
+            p (int): Selected profile
+
+        Raises:
+            ValueError: If profile is invalid
+
+        Returns:
+            str: Profile name
+        """
         if self._is_valid_profile(p):
             return self._controller._send_command(
                 f'PROF:EDIT:GNAM {int(p)}').strip()
@@ -283,6 +296,16 @@ class profile(command):
             raise ValueError('Invalid profile')
 
     def set_profile_name(self, p: int, name: str):
+        """Set the profile name of the selected profile.
+
+        Args:
+            p (int): Selected profile
+            name (str): Profile name
+
+        Raises:
+            ValueError: If name is too long (greater than 15 characters)
+            ValueError: If profile is invalid
+        """
         if self._is_valid_profile(p):
             if len(name) < 15:
                 self._controller._send_command(
@@ -293,7 +316,23 @@ class profile(command):
             raise ValueError('Invalid profile')
 
     def _is_valid_profile(self, p: int):
+        """Check if selected profile is valid.
+
+        Args:
+            p (int): Selected profile
+
+        Returns:
+            bool: Validity of profile
+        """
         return p >= 0 and p < self.PROFILE_NUM
 
     def _is_valid_item_index(self, i: int):
+        """Check if selected item index is valid.
+
+        Args:
+            i (int): Selected item index
+
+        Returns:
+            bool: Validity of item index
+        """
         return i >= 0 and i < self.ITEM_NUM

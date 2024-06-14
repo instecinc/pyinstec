@@ -6,8 +6,9 @@ from instec.controller import controller, mode
 
 
 class command:
-    def __init__(self, mode=mode.USB, baudrate=38400, port='COM3'):
-        self._controller = controller(mode, baudrate, port)
+    def __init__(self, conn_mode: mode = mode.USB,
+                 baudrate: int = 38400, port: str = 'COM3'):
+        self._controller = controller(conn_mode, baudrate, port)
 
     def connect(self):
         self._controller.connect()
