@@ -20,18 +20,22 @@ selected_profile = int(input('Select profile: '))
 
 name = controller.get_profile_name(selected_profile).strip()
 name.replace(' ', '_')
-filename = f'transferred_profile_{selected_profile}_{name}.py'
+base_path = 'profiles'
+file_name = f'transferred_profile_{selected_profile}_{name}.py'
+file_path = os.path.join(base_path, file_name)
 file = None
 
 try:
-    print(f'Creating file {filename}')
-    file = open(filename, 'x')
-except OSError:
-    print('File already exists')
+    print(f'Creating file {file_name}')
+    if not os.path.exists(os.path.join(base_path)):
+        os.mkdir(os.path.join(base_path))
+    file = open(file_path, 'x')
+except OSError as error:
+    print(f'File already exists {error}')
     confirm = input('Replace file (Y/n)? ')
     if 'Y'.casefold() == confirm.casefold():
-        os.remove(filename)
-        file = open(filename, 'x')
+        os.remove(file_path)
+        file = open(file_path, 'x')
     elif 'n'.casefold() == confirm.casefold():
         print('Exiting program')
         exit(0)
