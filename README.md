@@ -35,7 +35,7 @@ then you can use the functions associated with the library.
 
 ### Connection
 
-To connect to the MK2000/B controller, first choose whether to connect over USB or Ethernet, and setup the connection to the device over the desired connection type.
+To connect to the MK2000/MK2000B controller, first choose whether to connect over USB or Ethernet, and setup the connection to the device over the desired connection type.
 Then, instantiate the controller.
 
 For USB:
