@@ -27,7 +27,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip setuptools wheel hatchling
-        python -m pip install .
+        python -m pip install pyserial
         python -m pip install flake8 pytest
     - name: Lint with flake8
       run: |
