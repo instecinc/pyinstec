@@ -9,7 +9,7 @@ from instec.constants import mode
 
 
 class controller:
-    """All basic communication functions to interface with the MK2000B.
+    """All basic communication functions to interface with the MK2000/MK2000B.
     """
 
     def __init__(self, conn_mode: mode = mode.USB,

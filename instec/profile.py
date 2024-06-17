@@ -10,7 +10,7 @@ from instec.temperature import temperature
 class profile(command):
     """All profile related commands.
     """
-    
+
     PROFILE_NUM = 5
     ITEM_NUM = 255
 
@@ -39,7 +39,7 @@ class profile(command):
         Args:
             p (int): Selected profile
         """
-        if self._is_valid_profile(p):
+        if self.is_valid_profile(p):
             self._controller._send_command(f'PROF:STAR {p}', False)
         else:
             raise ValueError('Invalid profile')
@@ -70,7 +70,7 @@ class profile(command):
         Args:
             p (int): Selected profile
         """
-        if self._is_valid_profile(p):
+        if self.is_valid_profile(p):
             self._controller._send_command(f'PROF:EDIT:PDEL {p}', False)
         else:
             raise ValueError('Invalid profile')
@@ -86,8 +86,8 @@ class profile(command):
             p (int): Selected profile
             i (int): Selected item index
         """
-        if self._is_valid_profile(p):
-            if self._is_valid_item_index(i):
+        if self.is_valid_profile(p):
+            if self.is_valid_item_index(i):
                 self._controller._send_command(
                     f'PROF:EDIT:IDEL {p},{i}', False)
             else:
@@ -110,8 +110,8 @@ class profile(command):
             b1 (float, optional): Optional parameter 1
             b2 (float, optional): Optional parameter 2
         """
-        if self._is_valid_profile(p):
-            if self._is_valid_item_index(i):
+        if self.is_valid_profile(p):
+            if self.is_valid_item_index(i):
                 match [item, b1, b2]:
                     case [profile_item.END
                           | profile_item.LOOP_END
@@ -162,8 +162,7 @@ class profile(command):
 
     def add_profile_item(self, p: int, item: profile_item,
                          b1: float = None, b2: float = None):
-        """Functions like insert_profile_item,
-        but only inserts items at the end of the profile.
+        """Adds items to the end of the profile.
 
         Args:
             p (int): Selected profile
@@ -188,13 +187,21 @@ class profile(command):
         Returns:
             (profile_item, float, float): Profile item tuple
         """
-        if self._is_valid_profile(p):
-            if self._is_valid_item_index(i):
+        if self.is_valid_profile(p):
+            if self.is_valid_item_index(i):
                 item_raw = self._controller._send_command(
                     f'PROF:EDIT:IRE {p},{i}').split(',')
                 item = profile_item(int(item_raw[0]))
-                b1 = None if len(item_raw) < 2 else float(item_raw[1])
-                b2 = None if len(item_raw) < 3 else float(item_raw[2])
+                b1 = float(item_raw[1]) if (item in [
+                    profile_item.HOLD,
+                    profile_item.RPP,
+                    profile_item.WAIT,
+                    profile_item.LOOP_BEGIN,
+                    profile_item.RAMP,
+                    profile_item.PURGE]) else None
+                b2 = float(item_raw[2]) if (item in [
+                    profile_item.PURGE,
+                    profile_item.RAMP]) else None
 
                 return item, b1, b2
             else:
@@ -215,8 +222,8 @@ class profile(command):
             i (int): Selected item index
             item (profile_item): Item instruction type
         """
-        if self._is_valid_profile(p):
-            if self._is_valid_item_index(i):
+        if self.is_valid_profile(p):
+            if self.is_valid_item_index(i):
                 if item is None:
                     item = self.get_profile_item(p, i)[0]
                 match [item, b1, b2]:
@@ -279,7 +286,7 @@ class profile(command):
         Returns:
             int: Number of items
         """
-        if self._is_valid_profile(p):
+        if self.is_valid_profile(p):
             return int(self._controller._send_command(
                 f'PROF:EDIT:IC {int(p)}'))
         else:
@@ -297,7 +304,7 @@ class profile(command):
         Returns:
             str: Profile name
         """
-        if self._is_valid_profile(p):
+        if self.is_valid_profile(p):
             return self._controller._send_command(
                 f'PROF:EDIT:GNAM {int(p)}').strip()
         else:
@@ -314,7 +321,7 @@ class profile(command):
             ValueError: If name is too long (greater than 15 characters)
             ValueError: If profile is invalid
         """
-        if self._is_valid_profile(p):
+        if self.is_valid_profile(p):
             if len(name) < 15:
                 self._controller._send_command(
                     f'PROF:EDIT:SNAM {int(p)},"{str(name)}"', False)
@@ -323,24 +330,24 @@ class profile(command):
         else:
             raise ValueError('Invalid profile')
 
-    def _is_valid_profile(self, p: int):
+    def is_valid_profile(self, p: int):
         """Check if selected profile is valid.
 
         Args:
             p (int): Selected profile
 
         Returns:
-            bool: Validity of profile
+            bool: True if in range, False otherwise
         """
         return p >= 0 and p < self.PROFILE_NUM
 
-    def _is_valid_item_index(self, i: int):
+    def is_valid_item_index(self, i: int):
         """Check if selected item index is valid.
 
         Args:
             i (int): Selected item index
 
         Returns:
-            bool: Validity of item index
+            bool: True if in range, False otherwise
         """
         return i >= 0 and i < self.ITEM_NUM

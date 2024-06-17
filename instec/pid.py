@@ -10,7 +10,9 @@ from instec.temperature import temperature
 class pid(command):
     """All PID related commands.
     """
-    
+
+    PID_INDEX_NUM = 8
+
     def get_current_pid(self):
         """Get the current PID value.
         p (float): The proportional value
@@ -47,7 +49,7 @@ class pid(command):
             (int, int, float, float, float): PID tuple
         """
         if isinstance(state, pid_table):
-            if index >= 0 and index < 8:
+            if self.is_valid_pid_index(index):
                 pid = self._controller._send_command(
                     f'TEMP:GPID {state.value},{int(index)}').split(',')
                 state = pid_table(int(pid[0]))
@@ -81,7 +83,7 @@ class pid(command):
             ValueError: If state is invalid
         """
         if isinstance(state, pid_table):
-            if index >= 0 and index < 8:
+            if self.is_valid_pid_index(index):
                 if temperature.is_in_operation_range(self, temp):
                     if p > 0 and i >= 0 and d >= 0:
                         self._controller._send_command(
@@ -96,3 +98,14 @@ class pid(command):
                 raise ValueError('Index is out of range')
         else:
             raise ValueError('State is invalid')
+
+    def is_valid_pid_index(self, index: int):
+        """Check if selected PID index is valid.
+
+        Args:
+            index (int): Selected PID index
+
+        Returns:
+            bool: True if in range, False otherwise
+        """
+        return index >= 0 and index < self.PID_INDEX_NUM

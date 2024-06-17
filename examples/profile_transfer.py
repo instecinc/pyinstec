@@ -45,7 +45,7 @@ try:
 except OSError:
     # The file already exists, confirm with user to
     # remove previous version
-    print(f'File already exists')
+    print('File already exists')
     confirm = input('Replace file (Y/n)? ')
     if 'Y'.casefold() == confirm.casefold():
         # Remove old version and add new one

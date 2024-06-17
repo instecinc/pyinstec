@@ -31,8 +31,7 @@ time.sleep(TIME)
 # Check if TSP value is still the same
 print(f'TSP value the same? {TSP == controller.get_set_point_temperature()}')
 
-# Output the current PV by getting the temperature of all PVs
-# and selecting the temperature of the current operating slave
+# Output the current PV
 print(f'Current PV temperature: {controller.get_process_variable()}')
 
 # Stop the HOLD command

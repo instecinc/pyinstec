@@ -1,11 +1,5 @@
 """Comprehensive temperature test for the instec library.
-This test set runs every available non-profile function, and takes
-roughly a minute to finish. The STEP_COUNT and UPDATE_DELAY variables
-should be updated accordingly before running this test. STEP_COUNT adjusts
-the number of steps certain tests take within the temperature range of the
-stage, and UPDATE_DELAY accounts for how long the controller takes to
-update values internally. If a test fails due to an assertion error, try
-increasing the UPDATE_DELAY in case your controller takes longer to respond.
+See controller_test.py first before running this test.
 """
 
 import time
@@ -19,7 +13,7 @@ class temperature_test(controller_test):
         self._reset_cooling_heating()
         max, min = self._reset_operation_range()
         for tsp in self._create_temp_range(max, min):
-            self._controller.ramp(tsp, self.RAMP)
+            self._controller.ramp(tsp, self.RT)
             self._controller.hold(tsp)
             self._controller.stop()
 
@@ -47,7 +41,7 @@ class temperature_test(controller_test):
             # Check CSP
             self.assertEqual(data[4], tsp)
             # Check RT
-            self.assertEqual(data[5], self.RAMP)
+            self.assertEqual(data[5], self.RT)
             self.assertEqual(data[5], self._controller.get_ramp_rate())
             # Check PP
             self.assertTrue(isinstance(data[6], float))
@@ -122,7 +116,7 @@ class temperature_test(controller_test):
         for tsp in self._create_temp_range(max, min):
             start_temp = self._controller.get_process_variables()[
                 self._controller.get_operating_slave() - 1]
-            self._controller.ramp(tsp, self.RAMP)
+            self._controller.ramp(tsp, self.RT)
             # Start time and temperature at beginning of ramp
             start_time = time.time()
 
@@ -134,10 +128,10 @@ class temperature_test(controller_test):
             self.assertAlmostEqual(
                 data[4],
                 start_temp + (-1 if start_temp > tsp else 1)
-                * ((time.time() - start_time) / 60 * self.RAMP),
+                * ((time.time() - start_time) / 60 * self.RT),
                 None, "Not close", 0.5)
             self.assertEqual(data[3], tsp)
-            self.assertEqual(data[5], self.RAMP)
+            self.assertEqual(data[5], self.RT)
             self.assertEqual(data[7], instec.system_status.RAMP)
 
             # Stop ramp
@@ -149,7 +143,7 @@ class temperature_test(controller_test):
             # Check system status
             data = self._controller.get_runtime_information()
             self.assertEqual(data[3], tsp)
-            self.assertEqual(data[5], self.RAMP)
+            self.assertEqual(data[5], self.RT)
             self.assertEqual(data[7], instec.system_status.STOP)
 
             # Delay for updated info
@@ -157,14 +151,14 @@ class temperature_test(controller_test):
 
         # Set invalid ramp tsp
         try:
-            self._controller.ramp(max + 1, self.RAMP)
+            self._controller.ramp(max + 1, self.RT)
             self.fail("Function did not raise exception")
         except Exception as error:
             self.assertTrue(isinstance(error, ValueError))
 
         # Set invalid ramp tsp
         try:
-            self._controller.ramp(min - 1, self.RAMP)
+            self._controller.ramp(min - 1, self.RT)
             self.fail("Function did not raise exception")
         except Exception as error:
             self.assertTrue(isinstance(error, ValueError))

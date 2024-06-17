@@ -10,7 +10,7 @@ from instec.constants import (temperature_mode, system_status,
 class temperature(command):
     """All temperature related commands.
     """
-    
+
     def get_system_information(self):
         """Information about the system:
         company (str): Company name
@@ -423,7 +423,7 @@ class temperature(command):
             float: Process variable
         """
         return self.get_process_variables()[self.get_operating_slave() - 1]
-    
+
     def get_monitor_value(self):
         """Get the monitor value of the current operating slave.
 
@@ -431,7 +431,7 @@ class temperature(command):
             float: Monitor value
         """
         return self.get_monitor_values()[self.get_operating_slave() - 1]
-    
+
     def get_protection_sensor(self):
         """Get the Protection sensor of the current operating slave.
 
