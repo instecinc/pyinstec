@@ -72,6 +72,14 @@ controller.hold(50.0)
 
 The following is a table of the 33 SCPI commands available for use with the MK2000B and their Python counterpart implemented in this library:
 
+There are two main categories of commands included with the library: Temperature and Profile commands. Temperature commands are generally used
+to query important runtime information from the controller and execute temperature control commands, while Profile commands are used to create
+profiles, which can be run directly on the controller without external input.
+
+#### Temperature Commands
+
+There are a total of 33 SCPI temperature commands implemented as Python functions in this library.
+
 | SCPI Command                  | Python Function               | Usage                                     |
 | :---------------------------: |:----------------------------: | :---------------------------------------: |
 | *IDN?                         | get_system_information()      | Get system info                           |
@@ -107,6 +115,50 @@ The following is a table of the 33 SCPI commands available for use with the MK20
 | TEMPerature:TCUNit?           | get_pv_unit_type()            | Get unit type of PV                       |
 | TEMPerature:TMUNit?           | get_mv_unit_type()            | Get unit type of MV                       |
 | TEMPerature:PRECision?        | get_precision()               | Get the decimal precision of PV and MV    |
+
+7 additional functions have been implemented as well:
+
+| Python Function               | Usage                                                   |
+|:----------------------------: | :-----------------------------------------------------: |
+| get_process_variable()        | Get the process variable of the current operating slave |
+| get_monitor_value()           | Get the monitor value of the current operating slave    |
+| get_protection_sensor()       | Get the protection sensor value of the current operating slave |
+| get_power_range()             | Get the power range                                     |
+| is_in_power_range(pp)         | Check if pp value is in power range                     |
+| is_in_ramp_rate_range(pp)     | Check if rt value is in ramp rate range                 |
+| is_in_operation_range(temp)   | Check if temp value is in operation range               |
+
+More information on the Python temperature commands can be found in the temperature.py and pid.py files.
+
+#### Profile Commands
+
+There are a total of 13 SCPI profile commands implemented as Python functions in this library.
+
+| SCPI Command                  | Python Function               | Usage                                     |
+| :---------------------------: |:----------------------------: | :---------------------------------------: |
+| PROFile:RTSTate?              | get_profile_state()           | Get the current profile state             |
+| PROFile:STARt p               | start_profile(p)              | Start the selected profile.               |
+| PROFile:PAUSe                 | pause_profile()               | Pauses the currently running profile      |
+| PROFile:RESume                | resume_profile()              | Resumes the current profile               |
+| PROFile:STOP                  | stop_profile()                | Stops the current profile                 |
+| PROFile:EDIT:PDELete p        | delete_profile(p)             | Delete the selected profile               |
+| PROFile:EDIT:IDELete p,i      | delete_profile_item(p, i)     | Delete the selected profile item          |
+| PROFile:EDIT:IINSert p,i,c,b1,b2 | insert_profile_item(p, i, c, b1, b2) | Insert the selected item into the selected profile |
+| PROFile:EDIT:IEDit p,i,c,b1,b2 | set_profile_item(p, i, c, b1, b2) | Set the selected item in the selected profile |
+| PROFile:EDIT:IREad p,i        | get_profile_item(p, i)        | Get the selected item from the selected profile |
+| PROFile:EDIT:ICount p         | get_profile_item_count(p)     | Get the number of items in the selected profile |
+| PROFile:EDIT:GNAMe p          | get_profile_name(p)           | Get the profile name of the selected profile |
+|PROFile:EDIT:SNAMe p,"name"    | set_profile_name(p, name)     | Set the profile name of the selected profile |
+
+3 additional functions have been implemented as well:
+
+| Python Function               | Usage                                                   |
+|:----------------------------: | :-----------------------------------------------------: |
+| add_profile_item(p, i, c, b1, b2) | Add item to the end of the profile                  |
+| is_valid_profile(p)          | Check if selected profile is valid                       |
+| is_valid_item_index(i)       | Check if selected item index is valid                    |
+
+More information on the Python profile commands can be found in profile.py.
 
 ### Enums
 
