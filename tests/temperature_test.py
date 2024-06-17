@@ -58,13 +58,13 @@ class info_query_test(controller_test):
 
             # Retrieve runtime information
             data = self._controller.get_runtime_information()
-            
+
             # Retrieve current PP
             pp = self._controller.get_power()
-            
+
             # Retrieve current PV
             pv = self._controller.get_process_variable()
-            
+
             # Retrieve current MV
             mv = self._controller.get_monitor_value()
 
@@ -261,7 +261,7 @@ class cooling_heating_test(controller_test):
 class operation_range_test(controller_test):
     """Test setting various operation ranges.
     """
-    
+
     def test_valid_operation_range(self):
         """Test setting valid operation range.
         """
@@ -281,7 +281,7 @@ class operation_range_test(controller_test):
         # Check if range is set properly
         self.assertEqual(omax, max)
         self.assertEqual(omin, min)
-        
+
     def test_invalid_operation_range(self):
         """Test setting invalid operation range.
         """
@@ -302,7 +302,7 @@ class operation_range_test(controller_test):
             self.fail("Function did not raise exception when min is too small")
         except Exception as error:
             self.assertTrue(isinstance(error, ValueError))
-            
+
         # Try to set min > max
         try:
             self._controller.set_operation_range(min, max)
@@ -316,10 +316,10 @@ class operation_range_test(controller_test):
 
         # Get stage range
         max, min = self._controller.get_stage_range()
-        
+
         # Get default stage range
         dmax, dmin = self._controller.get_default_operation_range()
-        
+
         # Check if default range is within stage range
         self.assertLessEqual(dmax, max)
         self.assertGreaterEqual(dmin, min)

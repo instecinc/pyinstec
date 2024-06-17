@@ -76,7 +76,7 @@ class profile(command):
             raise ValueError('Invalid profile')
 
     def delete_profile_item(self, p: int, i: int):
-        """Delete the selected profile.
+        """Delete the selected profile item.
         Profiles are zero-indexed, ranging from 0 to 4, inclusive, but
         the default names are one-indexed (i.e. 0 corresponds with
         1 Profile, 1 corresponds with 2 Profile, etc.).
