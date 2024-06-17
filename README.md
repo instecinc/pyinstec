@@ -62,6 +62,11 @@ After finishing a program, it is recommended to close the connection with the co
 controller.disconnect()
 ```
 
+To check if a controller is connected, call
+```python
+controller.is_connected()
+```
+
 ### Functions
 
 All functions in instec.py are instance methods, meaning they must be called with an instance of the controller. For example,
@@ -176,3 +181,30 @@ controller.set_cooling_heating_status(instec.temperature_mode.HEATING_ONLY)
 The hope is by using enums, it is more obvious what each value accomplishes and parameters are less likely to be incorrectly set.
 
 All enums can be seen in the instec.py file and correspond with their respective integer values in the SCPI command guide.
+
+## Examples
+There are a total of 6 examples currently included with this repository.
+
+### basic_hold.py
+
+This example follows a very basic process: initializing the controller, executing a HOLD command, waiting for a specified amount of time, then checking the TSP value and returning the PV value. After completing the previous actions, the program stops the HOLD command and disconnects from the controller.
+
+### consecutive_ramp.py
+
+This example takes a list of TSP and RT values, using them to execute several RAMP commands in sucession. After a RAMP is executed, the program calculates the prospective amount of time it will take for the RAMP to finish executing based on the current temperature and TSP temperature, then wait that duration of time before executing the next RAMP.
+
+### controller_info.py
+
+This example prints out various information about the controller, including the connection status, runtime information, and ramp rate range. The program queries each of these commands a specified amount of times, with a specified delay.
+
+### profile_hold.py
+
+This example creates and stores a profile to an empty profile slot or a profile location specified by the user. The profile itself consists of alternating HOLD and WAIT commands, in which the profile will HOLD and WAIT at specified temperatures and durations.
+
+### profile_transfer.py
+
+This example reads a specified profile from the controller and converts it into a Python program using temperature commands instead of profile commands. The functionality of this program will NOT be identical to the profile on the controller due to the implementation of Delta T and Duration on the controller. Instead, the program uses the variable PRECISION to indicate when it should move on to the next item in the profile.
+
+### profile_copy.py
+
+This example reads a specified profile from the controller and converts it into a Python program that uses profile commands to reconstruct the profile. The functionality of a profile created from this program is identical since all commands are preserved.
