@@ -3,9 +3,15 @@ See controller_test.py first before running this test.
 """
 
 
-import instec
 import time
 import unittest
+import sys
+import os
+
+# Run tests using local copy of library - comment this out if unnecessary
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import instec
 from controller_test import controller_test
 
 
