@@ -1,16 +1,26 @@
-"""Comprehensive profile test for instec library.
+"""Profile test cases for generating and running profiles.
 See controller_test.py first before running this test.
 """
 
 
-import instec
 import time
 import unittest
+import sys
+import os
+
+# Run tests using local copy of library
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import instec
 from controller_test import controller_test
 
 
 class profile_test(controller_test):
     def setUp(self):
+        """Set up controller and complete basic reset and testing of profile
+        before execution.
+        """
+
         # Call setUp of controller_test
         super().setUp()
 
@@ -38,6 +48,9 @@ class profile_test(controller_test):
             self._controller.get_profile_item_count(self.TEST_PROFILE), 0)
 
     def tearDown(self):
+        """Reset testing profile and shut down controller.
+        """
+
         # Clear test profile
         self._controller.delete_profile(self.TEST_PROFILE)
 
@@ -49,6 +62,10 @@ class profile_test(controller_test):
         super().tearDown()
 
     def test_run_profile(self):
+        """Test profile runtime commands such as
+        start, pause, resume, and stop.
+        """
+
         # Add change to Heating & Cooling to profile
         self._controller.add_profile_item(
             self.TEST_PROFILE, instec.profile_item.HEATING_AND_COOLING)
@@ -60,8 +77,8 @@ class profile_test(controller_test):
         # Start the profile
         self._controller.start_profile(self.TEST_PROFILE)
 
-        # Delay for updated info
-        time.sleep(self.UPDATE_DELAY + 10)
+        # Delay for updated info and first instruction execution
+        time.sleep(self.UPDATE_DELAY + 1)
 
         # Check profile status is running correct profile and index
         status = self._controller.get_profile_state()
@@ -106,6 +123,10 @@ class profile_test(controller_test):
         self.assertEqual(status[2], 2)
 
     def test_profile_items(self):
+        """Test adding all item instruction types, as well as set and
+        delete item functionalities.
+        """
+
         # Below setup is equivalent to:
         # self._controller.add_profile_item(
         #     self.TEST_PROFILE, instec.profile_item.HEATING_ONLY)
@@ -170,6 +191,9 @@ class profile_test(controller_test):
                 self.TEST_PROFILE, instec.profile_item(items[i]),
                 b1.get(i), b2.get(i))
 
+        # Delay for updated info
+        time.sleep(self.UPDATE_DELAY)
+
         # Check profile item count is correct
         self.assertEqual(
             self._controller.get_profile_item_count(self.TEST_PROFILE),
@@ -180,7 +204,7 @@ class profile_test(controller_test):
             # Check item instruction type
             item = self._controller.get_profile_item(self.TEST_PROFILE, i)
             self.assertEqual(item[0].value, items[i])
-            print(item[0])
+
             # Check parameter 1 type, if applicable
             p1 = b1.get(i)
             self.assertEqual(item[1], p1)
@@ -189,17 +213,30 @@ class profile_test(controller_test):
             p2 = b2.get(i)
             self.assertEqual(item[2], p2)
 
-        # Test set item by replacing the item at index 1 with STOP
-        self._controller.set_profile_item(
-            self.TEST_PROFILE, 1, instec.profile_item.STOP)
-        time.sleep(self.UPDATE_DELAY)
-        item = self._controller.get_profile_item(self.TEST_PROFILE, 1)
-        self.assertEqual(item[0], instec.profile_item.STOP)
+        # Test setting items by replacing every item with STOP
+        for i in range(len(items)):
+            # Set profile item at index i to STOP
+            self._controller.set_profile_item(
+                self.TEST_PROFILE, i, instec.profile_item.STOP)
 
-        # Test deletion of item by deleting the item at index 1
-        self._controller.delete_profile_item(self.TEST_PROFILE, 1)
-        item = self._controller.get_profile_item(self.TEST_PROFILE, 1)
-        self.assertEqual(item[0], instec.profile_item(items[2]))
+            # Delay for updated info
+            time.sleep(self.UPDATE_DELAY)
+
+            # Check if profile item at index i is STOP
+            item = self._controller.get_profile_item(self.TEST_PROFILE, i)
+            self.assertEqual(item[0], instec.profile_item.STOP)
+
+        # Test deleting items by removing every item
+        for i in reversed(range(len(items))):
+            # Delete item at index i
+            self._controller.delete_profile_item(self.TEST_PROFILE, i)
+
+            # Delay for updated info
+            time.sleep(self.UPDATE_DELAY)
+
+            # Check if number of items in profile is correct
+            self.assertEqual(
+                self._controller.get_profile_item_count(self.TEST_PROFILE), i)
 
 
 if __name__ == '__main__':

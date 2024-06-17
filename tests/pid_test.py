@@ -1,6 +1,7 @@
-"""Comprehensive PID test for instec library.
+"""PID test cases to confirm PID functionality.
 See controller_test.py first before running this test.
 """
+
 
 import instec
 import time

@@ -149,9 +149,12 @@ class temperature(command):
             ValueError: If tsp is out of range
         """
         if self.is_in_operation_range(tsp):
-            error = int(
-                self._controller._send_command(
-                    f'TEMP:RAMP {float(tsp)},{float(rt)}; ERR?'))
+            if self.is_in_ramp_rate_range(rt):
+                error = int(
+                    self._controller._send_command(
+                        f'TEMP:RAMP {float(tsp)},{float(rt)}; ERR?'))
+            else:
+                raise ValueError('Ramp rate is out of range')
             if error == 4:
                 self.stop()
                 raise ValueError('Set point value is out of range')
@@ -412,8 +415,8 @@ class temperature(command):
             (int, int): Tuple of PV and MV precision
         """
         precision = self._controller._send_command('TEMP:PREC?').split(',')
-        pv_precision = precision[0]
-        mv_precision = precision[1]
+        pv_precision = int(precision[0])
+        mv_precision = int(precision[1])
         return pv_precision, mv_precision
 
     def get_process_variable(self):

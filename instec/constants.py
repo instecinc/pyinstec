@@ -19,7 +19,7 @@ class system_status(Enum):
     RAMP = 2
     PAUSE = 3
     PROFILE = 4
-    PP = 5
+    RPP = 5
     PURGE = 6
 
 

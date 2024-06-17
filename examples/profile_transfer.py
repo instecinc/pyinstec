@@ -1,5 +1,12 @@
 """Python program that reads an existing profile off of
 the controller and converts it into a python script.
+
+The functionality of the script is NOT identical to running
+a profile on the controller. The controller uses Delta T and
+Duration to determine when to move on to the next item in a
+profile, but the generated script will ONLY delay until the
+utilized temperature control command has reached within PRECISION
+amount of the desired value.
 """
 
 import instec
