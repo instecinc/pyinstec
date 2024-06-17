@@ -4,7 +4,7 @@ can recreate the profile on the controller.
 
 The functionality of profile recreated by this program
 should be IDENTICAL to the original script on retrieved
-from the controller.
+from the controller if parameters provided are valid.
 """
 
 
@@ -29,8 +29,8 @@ PRECISION = 0.1             # In °C or %
 selected_profile = int(input('Select profile: '))
 
 # Create and set filepath for new file
-name = controller.get_profile_name(selected_profile).strip()
-name.replace(' ', '_')
+name = controller.get_profile_name(selected_profile)
+name = name.strip().replace(' ', '_')
 base_path = 'profiles'
 file_name = f'copy_profile_{selected_profile}_{name}.py'
 file_path = os.path.join(base_path, file_name)
@@ -74,8 +74,13 @@ import instec
 
 controller = instec.MK2000(instec.mode.{'USB' if MODE == instec.mode.USB else 'ETHERNET'}, {BAUD}, '{PORT}')
 controller.connect()
-''')
 
+PROFILE = {selected_profile}
+
+controller.delete_profile(PROFILE)
+
+controller.set_profile_name('{name}')
+''')
 # Iterate through all items in profile and add different functions to the file
 # depending on the item.
 for i in range(controller.get_profile_item_count(selected_profile)):
@@ -83,7 +88,7 @@ for i in range(controller.get_profile_item_count(selected_profile)):
 
     # Write commands to file
     file.write(f'''
-controller.add_profile_item(instec.{item[0]}, {item[1]}, {item[2]})''')
+controller.add_profile_item(PROFILE, instec.{item[0]}, {item[1]}, {item[2]})''')
 
 # Write controller disconnect to file
 file.write('''
