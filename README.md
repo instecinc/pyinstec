@@ -19,9 +19,8 @@ pip install pyserial
 ```
 
 After installing pyserial, the instec library can be installed.
-Currently, the library is only available on TestPyPI. To install the library, run
 ```shell
-pip install --index-url https://test.pypi.org/simple/ instec
+pip install instec
 ```
 
 ## Usage
