@@ -22,5 +22,5 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/MC325/pyinstec"
-Issues = "https://github.com/MC325/pyinstec/issues"
+Homepage = "https://github.com/instecinc/pyinstec"
+Issues = "https://github.com/instecinc/pyinstec/issues"
