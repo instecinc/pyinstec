@@ -35,7 +35,7 @@ selected_profile = int(input('Select profile: '))
 name = controller.get_profile_name(selected_profile).strip()
 name.replace(' ', '_')
 base_path = 'profiles'
-file_name = f'transferred_profile_{selected_profile}_{name}.py'
+file_name = f'transfer_profile_{selected_profile}_{name}.py'
 file_path = os.path.join(base_path, file_name)
 
 # Create file variable
