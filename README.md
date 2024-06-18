@@ -7,9 +7,6 @@ Before using this library, it is highly recommended that you read through the SC
 - Github Page: https://github.com/instecinc/pyinstec
 - Download Page: https://pypi.org/project/instec/
 
-## Documentation
-Documentation for each function is provided with the python file instec.py.
-
 ## Installation
 Currently, the library only supports Python versions 3.10 or later, but may change later on to support older versions. It has been tested on Windows 11 in the Visual Studio Code development environment.
 
@@ -22,6 +19,8 @@ After installing pyserial, the instec library can be installed.
 ```shell
 pip install instec
 ```
+
+To download the example and test codes in this repository, please clone it, which can be done by following [this guide](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository).
 
 ## Usage
 To add the library to your python file, add the import
