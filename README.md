@@ -20,7 +20,7 @@ After installing pyserial, the instec library can be installed.
 pip install instec
 ```
 
-To download the example and test codes in this repository, please clone it, which can be done by following [this guide](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository).
+To download the example and test codes in this repository, clone the repository. More info can be found in [this guide](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository).
 
 ## Usage
 To add the library to your python file, add the import
