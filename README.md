@@ -5,7 +5,7 @@ All basic SCPI commands, such as HOLD or RAMP, have been abstracted into Python 
 Before using this library, it is highly recommended that you read through the SCPI command guide to gain an understanding of what all relevant functions do.
 
 - Github Page: https://github.com/instecinc/pyinstec
-- Download Page: https://test.pypi.org/project/instec/
+- Download Page: https://pypi.org/project/instec/
 
 ## Documentation
 Documentation for each function is provided with the python file instec.py.
