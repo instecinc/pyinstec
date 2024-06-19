@@ -178,7 +178,7 @@ controller.set_cooling_heating_status(instec.temperature_mode.HEATING_ONLY)
 
 The hope is by using enums, it is more obvious what each value accomplishes and parameters are less likely to be incorrectly set.
 
-All enums can be seen in the instec.py file and correspond with their respective integer values in the SCPI command guide.
+All enums can be seen in the constants.py file and correspond with their respective integer values in the SCPI command guide. If a function requires an enum, it will be mentioned in the docstring of the function.
 
 ## Examples
 There are a total of 6 examples currently included with this repository.
