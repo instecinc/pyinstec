@@ -3,6 +3,7 @@ with the MK2000/MK2000B controller itself.
 """
 
 import serial
+from serial.tools import list_ports
 import socket
 import sys
 from instec.constants import mode
@@ -11,30 +12,126 @@ from instec.constants import mode
 class controller:
     """All basic communication functions to interface with the MK2000/MK2000B.
     """
+    
+    def get_ethernet_controllers():
+        udp_receiver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        udp_receiver.bind(
+            (socket.gethostbyname(socket.gethostname()),
+                50291))
+        udp_receiver.settimeout(1.0)
 
-    def __init__(self, conn_mode: mode = mode.USB,
-                 baudrate: int = 38400, port: str = 'COM3'):
+        udp_sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        udp_sender.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        udp_sender.sendto(
+            bytes.fromhex('73C4000001'),
+            ('255.255.255.255', 50290))
+
+        controllers = []
+        while True:
+            try:
+                buffer, addr = udp_receiver.recvfrom(1024)
+                buffer = buffer.decode()
+                data = buffer.strip().split(':')
+                model = data[0]
+                serial_num = data[1]
+                if model.startswith('IoT_MK#MK2000'):
+                    controllers.append((serial_num, addr[0]))
+            except socket.error as error:
+                break
+            except Exception as error:
+                raise RuntimeError('Did not receive UDP response') from error
+        
+        return controllers
+
+    def get_usb_controllers():
+        ports = list_ports.comports()
+        controllers = []
+        for port in ports:
+            conn = serial.Serial(port.name)
+            conn.timeout = 1.0
+            try:
+                conn.open()
+                
+                conn.write(str.encode('TEMP:SNUM?'))
+                
+                buffer = conn.readline().decode()
+                while not buffer.endswith('\r\n'):
+                    buffer += conn.readline().decode()
+                    
+                data = buffer.strip().split(',')
+                company = data[0]
+                model = data[1]
+                serial_num = data[2]
+                
+                if company == 'Instec' and model.startswith('MK2000B'):
+                    controllers.append((serial_num, port))
+                
+            except Exception:
+                continue
+
+            return controllers
+
+    def _get_controller_by_serial_number(self, serial_num: str):
+        for controller in self.get_usb_controllers():
+            if controller[0] == serial_num:
+                return mode.USB, controller[1]
+        if self._mode is None:
+            for controller in self.get_ethernet_controllers():
+                if controller[0] == serial_num:
+                    return mode.ETHERNET, controller[1]
+            if self._mode is None:
+                raise ValueError(f'Controller with serial number {serial_num} not connected.')
+
+    def __init__(self, conn_mode: mode = None,
+                 baudrate: int = 38400, port: str = None, serial_num: str = None, ip: str = None):
         """Initialize any relevant attributes necessary to connect to the
         controller, and define the connection mode.
 
         Args:
             conn_mode (mode, optional):    USB or Ethernet connection mode.
-                                        Defaults to mode.USB.
+                                        Defaults to None.
             baudrate (int, optional):   Baud rate (for USB only).
                                         Defaults to 38400.
             port (str, optional):       Serial port (for USB only).
-                                        Defaults to 'COM3'.
+                                        Defaults to None.
 
         Raises:
             ValueError: If invalid connection mode is given.
         """
         self._mode = conn_mode
+        if self._mode is None:
+            if isinstance(serial_num, str):
+                self._mode, param = self._get_controller_by_serial_number(serial_num)
+                if self._mode == mode.USB:
+                    port = param
+                elif self._mode == mode.ETHERNET:
+                    ip = param
+
         if self._mode == mode.USB:
             self._usb = serial.Serial()
-            self._usb.baudrate = baudrate
-            self._usb.port = port
+            if isinstance(baudrate, int):
+                self._usb.baudrate = baudrate
+            else:
+                raise ValueError('Invalid baud rate')
+            if isinstance(port, str):
+                self._usb.port = port
+            else:
+                if isinstance(serial_num, str):
+                    self._mode, self._usb.port = self._get_controller_by_serial_number(serial_num)
+                    if self._mode != mode.USB:
+                        raise ValueError('Invalid connection mode')
+                else:
+                    raise ValueError('Invalid port')
         elif self._mode == mode.ETHERNET:
-            self._controller_address = None
+            if isinstance(ip, str):
+                self._controller_address = ip
+            else:
+                if isinstance(serial_num, str):
+                    self._mode, self._controller_address = self._get_controller_by_serial_number(serial_num)
+                    if self._mode != mode.ETHERNET:
+                        raise ValueError('Invalid connection mode')
+                else:
+                    raise ValueError('Invalid IP address')
         else:
             raise ValueError('Invalid connection mode')
 
@@ -54,28 +151,6 @@ class controller:
             except serial.SerialException as error:
                 raise RuntimeError('Unable to connect via COM port') from error
         elif self._mode == mode.ETHERNET:
-            # See MK2000 Ethernet Communication Guide for more information
-            # Obtain controller IP from UDP message
-            udp_receiver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            udp_receiver.bind(
-                (socket.gethostbyname(socket.gethostname()),
-                 50291))
-            udp_receiver.settimeout(10)
-
-            udp_sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            udp_sender.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            udp_sender.sendto(
-                bytes.fromhex('73C4000001'),
-                ('255.255.255.255', 50290))
-
-            try:
-                self._controller_address = udp_receiver.recvfrom(1024)[1][0]
-            except Exception as error:
-                raise RuntimeError('Did not receive UDP response') from error
-
-            udp_receiver.close()
-            udp_sender.close()
-
             # Establish TCP connection with controller
             self._tcp_socket = socket.socket(
                 socket.AF_INET,
