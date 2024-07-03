@@ -14,6 +14,11 @@ class controller:
     """
     
     def get_ethernet_controllers():
+        """Get all controllers connected via Ethernet.
+
+        Returns:
+            List: List of tuples in the form (serial_num, ip)
+        """
         udp_receiver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         udp_receiver.bind(
             (socket.gethostbyname(socket.gethostname()),
@@ -44,6 +49,11 @@ class controller:
         return controllers
 
     def get_usb_controllers():
+        """Get all controllers connected via USB.
+
+        Returns:
+            List: List of tuples in the form (serial_num, port)
+        """
         ports = list_ports.comports()
         controllers = []
         for port in ports:
@@ -72,6 +82,18 @@ class controller:
             return controllers
 
     def _get_controller_by_serial_number(self, serial_num: str):
+        """Find the controller connection info by serial number.
+
+        Args:
+            serial_num (str): Serial number of the controller.
+
+        Raises:
+            ValueError: If a controller with the serial number is not found.
+
+        Returns:
+            List: List of tuples in the form (serial_num, param). where param is
+                  either the port (USB) or IP address (Ethernet)
+        """
         for controller in self.get_usb_controllers():
             if controller[0] == serial_num:
                 return mode.USB, controller[1]
@@ -90,9 +112,13 @@ class controller:
         Args:
             conn_mode (mode, optional):    USB or Ethernet connection mode.
                                         Defaults to None.
-            baudrate (int, optional):   Baud rate (for USB only).
+            baudrate (int, optional):   Baud rate (USB mode only).
                                         Defaults to 38400.
-            port (str, optional):       Serial port (for USB only).
+            port (str, optional):       Serial port (USB mode only).
+                                        Defaults to None.
+            serial_num (str, optional): Serial number of controller.
+                                        Defaults to None.
+            ip (str, optional):         IP address of controller (Ethernet mode only).
                                         Defaults to None.
 
         Raises:
