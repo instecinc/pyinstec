@@ -34,20 +34,31 @@ then you can use the functions associated with the library.
 ### Connection
 
 To connect to the MK2000/MK2000B controller, first choose whether to connect over USB or Ethernet, and setup the connection to the device over the desired connection type.
-Then, instantiate the controller.
 
-For USB:
+If you are unsure of what port or IP address your current controller has, you can call the commands `get_ethernet_controllers()` to retrieve all controllers connected via Ethernet and `get_usb_controllers()` to retrieve all controllers connected via USB. These functions will return a list of tuples of the serial number and IP address, and the serial number and port, respectively.
+
+The controller can be instantiated in 3 different ways:
+
+If the connection mode is USB and the port is known:
 ```python
 controller = instec.MK2000(instec.mode.USB, baudrate, port)
 ```
-By default the baud rate and port are 38400 and 'COM3', respectively.
+Where `baudrate` and `port` are the baud rate and port of the device, respectively.
+By default the baud rate is 38400.
 
-For Ethernet:
+If the connection mode is Ethernet and the IP address is known:
 ```python
-controller = instec.MK2000(instec.mode.ETHERNET)
+controller = instec.MK2000(instec.mode.ETHERNET, ip)
 ```
+Where `ip` is the IP address of the controller.
 
-Then, to connect to the controller, simply call
+If the connection mode is unknown and the serial number is known:
+```python
+controller = instec.MK2000(serial_num)
+```
+Where serial_num is the serial number of the device.
+
+To connect to the controller, call
 ```python
 controller.connect()
 ```
