@@ -94,13 +94,13 @@ class controller:
             List: List of tuples in the form (serial_num, param). where param is
                   either the port (USB) or IP address (Ethernet)
         """
-        for controller in self.get_usb_controllers():
-            if controller[0] == serial_num:
-                return mode.USB, controller[1]
+        for c in controller.get_usb_controllers() or []:
+            if c[0] == serial_num:
+                return mode.USB, c[1]
         if self._mode is None:
-            for controller in self.get_ethernet_controllers():
-                if controller[0] == serial_num:
-                    return mode.ETHERNET, controller[1]
+            for c in controller.get_ethernet_controllers() or []:
+                if c[0] == serial_num:
+                    return mode.ETHERNET, c[1]
             if self._mode is None:
                 raise ValueError(f'Controller with serial number {serial_num} not connected.')
 
