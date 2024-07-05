@@ -248,6 +248,8 @@ class controller:
                 except OSError as error:
                     if sys.platform == "win32" and error.winerror == 10038:
                         pass
+                except AttributeError:
+                    return False
         else:
             raise ValueError('Invalid connection mode')
 
