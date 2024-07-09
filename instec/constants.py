@@ -5,6 +5,8 @@ from enum import Enum
 
 class connection:
     TIMEOUT = 1
+    ETHERNET_PORT = 'eth0'
+    IP_ADDRESS = None
 
 class mode(Enum):
     """Enums for connection mode.

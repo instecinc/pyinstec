@@ -6,6 +6,7 @@ import serial
 from serial.tools import list_ports
 import socket
 import sys
+if sys.platform.startswith('linux'): import fcntl, struct
 from instec.constants import mode, connection
 
 class udp_singleton:
@@ -15,12 +16,32 @@ class udp_singleton:
             if not hasattr(cls, 'receiver'):
                 cls.receiver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 cls.receiver.bind(
-                    (socket.gethostbyname(socket.gethostname()), 50291))
+                    ((udp_singleton._get_eth_addr()
+                        ), 50291))
                 cls.receiver.settimeout(connection.TIMEOUT)
             if not hasattr(cls, 'sender'):
                 cls.sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 cls.sender.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
             return cls.instance
+    
+    def _get_eth_addr():
+        if isinstance(connection.IP_ADDRESS, str):
+            return connection.IP_ADDRESS
+        if sys.platform.startswith('win32'):
+            return socket.gethostbyname(socket.gethostname())
+        if sys.platform.startswith('linux'):
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+                    return socket.inet_ntoa(
+                        fcntl.ioctl(
+                            s.fileno(),
+                            0x8915,
+                            struct.pack('256s', connection.ETHERNET_PORT.encode()))[20:24])
+            except Exception as error:
+                raise RuntimeError('Issue finding ethernet port') from error
+        else:
+            raise RuntimeError('Unsupported OS')
+                
 
 class controller:
     """All basic communication functions to interface with the MK2000/MK2000B.
@@ -52,8 +73,8 @@ class controller:
                     controller.ethernet.append((serial_num, addr[0]))
             except socket.error as error:
                 break
-            # except Exception as error:
-            #     raise RuntimeError('Did not receive UDP response') from error
+            except Exception as error:
+                raise RuntimeError('Did not receive UDP response') from error
         
         return controller.ethernet
 
@@ -235,7 +256,7 @@ class controller:
             try:
                 timeout = self._tcp_socket.gettimeout()
                 self._tcp_socket.settimeout(0)
-                if sys.platform == "win32":
+                if sys.platform.startswith('win32'):
                     data = self._tcp_socket.recv(16, socket.MSG_PEEK)
                 else:
                     data = self._tcp_socket.recv(16,
@@ -248,7 +269,7 @@ class controller:
             except ConnectionResetError:
                 return False
             except OSError as error:
-                if sys.platform == "win32" and error.winerror == 10038:
+                if sys.platform == 'win32' and error.winerror == 10038:
                     return False
             except ValueError:
                 return False
