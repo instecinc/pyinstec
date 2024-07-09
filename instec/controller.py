@@ -8,15 +8,26 @@ import socket
 import sys
 from instec.constants import mode, connection
 
+class udp_singleton:
+    def __new__(cls):
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(udp_singleton, cls).__new__(cls)
+            if not hasattr(cls, 'receiver'):
+                cls.receiver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                cls.receiver.bind(
+                    (socket.gethostbyname(socket.gethostname()), 50291))
+                cls.receiver.settimeout(connection.TIMEOUT)
+            if not hasattr(cls, 'sender'):
+                cls.sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                cls.sender.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            return cls.instance
 
 class controller:
     """All basic communication functions to interface with the MK2000/MK2000B.
     """
-    udp_receiver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); udp_receiver.bind(
-        (socket.gethostbyname(socket.gethostname()),
-         50291)); udp_receiver.settimeout(connection.TIMEOUT)
-    udp_sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); udp_sender.setsockopt(
-        socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    udp = udp_singleton()
+    ethernet = []
+    usb = []
     
     def get_ethernet_controllers():
         """Get all controllers connected via Ethernet.
@@ -24,28 +35,27 @@ class controller:
         Returns:
             List: List of tuples in the form (serial_num, ip)
         """
-        controller.udp_sender.sendto(
+        
+        controller.udp.sender.sendto(
             bytes.fromhex('73C4000001'),
             ('255.255.255.255', 50290))
 
-        controllers = []
+        controller.ethernet = []
         while True:
             try:
-                buffer, addr = controller.udp_receiver.recvfrom(1024)
+                buffer, addr = controller.udp.receiver.recvfrom(1024)
                 buffer = buffer.decode()
                 data = buffer.strip().split(':')
                 model = data[0]
                 serial_num = data[1]
                 if model.startswith('IoT_MK#MK2000'):
-                    controllers.append((serial_num, addr[0]))
-            # except socket.error as error:
-            #     break
-            except KeyboardInterrupt:
+                    controller.ethernet.append((serial_num, addr[0]))
+            except socket.error as error:
                 break
-            except Exception as error:
-                raise RuntimeError('Did not receive UDP response') from error
+            # except Exception as error:
+            #     raise RuntimeError('Did not receive UDP response') from error
         
-        return controllers
+        return controller.ethernet
 
     def get_usb_controllers():
         """Get all controllers connected via USB.
@@ -54,7 +64,7 @@ class controller:
             List: List of tuples in the form (serial_num, port)
         """
         ports = list_ports.comports()
-        controllers = []
+        controller.usb = []
         for port in ports:
             conn = serial.Serial(port.name)
             conn.timeout = connection.TIMEOUT
@@ -73,12 +83,12 @@ class controller:
                 serial_num = data[2]
                 
                 if company == 'Instec' and model.startswith('MK2000'):
-                    controllers.append((serial_num, port))
+                    controller.usb.append((serial_num, port))
                 
             except Exception:
                 continue
 
-            return controllers
+            return controller.usb
 
     def _get_controller_by_serial_number(self, serial_num: str):
         """Find the controller connection info by serial number.
@@ -95,6 +105,10 @@ class controller:
         """
         if self._mode in [mode.USB, None]:
             try:
+                for c in controller.usb:
+                    if c[0] == serial_num:
+                        self._mode = mode.USB
+                        return c[1]
                 for c in controller.get_usb_controllers():
                     if c[0] == serial_num:
                         self._mode = mode.USB
@@ -103,6 +117,10 @@ class controller:
                 pass
         if self._mode in [mode.ETHERNET, None]:
             try:
+                for c in controller.ethernet:
+                    if c[0] == serial_num:
+                        self._mode = mode.ETHERNET
+                        return c[1]
                 for c in controller.get_ethernet_controllers():
                     if c[0] == serial_num:
                         self._mode = mode.ETHERNET
