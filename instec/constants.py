@@ -3,6 +3,8 @@
 
 from enum import Enum
 
+class connection:
+    TIMEOUT = 1
 
 class mode(Enum):
     """Enums for connection mode.

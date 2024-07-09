@@ -6,12 +6,17 @@ import serial
 from serial.tools import list_ports
 import socket
 import sys
-from instec.constants import mode
+from instec.constants import mode, connection
 
 
 class controller:
     """All basic communication functions to interface with the MK2000/MK2000B.
     """
+    udp_receiver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); udp_receiver.bind(
+        (socket.gethostbyname(socket.gethostname()),
+         50291)); udp_receiver.settimeout(connection.TIMEOUT)
+    udp_sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); udp_sender.setsockopt(
+        socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     
     def get_ethernet_controllers():
         """Get all controllers connected via Ethernet.
@@ -19,29 +24,23 @@ class controller:
         Returns:
             List: List of tuples in the form (serial_num, ip)
         """
-        udp_receiver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        udp_receiver.bind(
-            (socket.gethostbyname(socket.gethostname()),
-                50291))
-        udp_receiver.settimeout(1.0)
-
-        udp_sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        udp_sender.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        udp_sender.sendto(
+        controller.udp_sender.sendto(
             bytes.fromhex('73C4000001'),
             ('255.255.255.255', 50290))
 
         controllers = []
         while True:
             try:
-                buffer, addr = udp_receiver.recvfrom(1024)
+                buffer, addr = controller.udp_receiver.recvfrom(1024)
                 buffer = buffer.decode()
                 data = buffer.strip().split(':')
                 model = data[0]
                 serial_num = data[1]
                 if model.startswith('IoT_MK#MK2000'):
                     controllers.append((serial_num, addr[0]))
-            except socket.error as error:
+            # except socket.error as error:
+            #     break
+            except KeyboardInterrupt:
                 break
             except Exception as error:
                 raise RuntimeError('Did not receive UDP response') from error
@@ -58,7 +57,7 @@ class controller:
         controllers = []
         for port in ports:
             conn = serial.Serial(port.name)
-            conn.timeout = 1.0
+            conn.timeout = connection.TIMEOUT
             try:
                 conn.open()
                 
@@ -73,7 +72,7 @@ class controller:
                 model = data[1]
                 serial_num = data[2]
                 
-                if company == 'Instec' and model.startswith('MK2000B'):
+                if company == 'Instec' and model.startswith('MK2000'):
                     controllers.append((serial_num, port))
                 
             except Exception:
@@ -94,15 +93,23 @@ class controller:
             List: List of tuples in the form (serial_num, param). where param is
                   either the port (USB) or IP address (Ethernet)
         """
-        for c in controller.get_usb_controllers() or []:
-            if c[0] == serial_num:
-                return mode.USB, c[1]
-        if self._mode is None:
-            for c in controller.get_ethernet_controllers() or []:
-                if c[0] == serial_num:
-                    return mode.ETHERNET, c[1]
-            if self._mode is None:
-                raise ValueError(f'Controller with serial number {serial_num} not connected.')
+        if self._mode in [mode.USB, None]:
+            try:
+                for c in controller.get_usb_controllers():
+                    if c[0] == serial_num:
+                        self._mode = mode.USB
+                        return c[1]
+            except TypeError:
+                pass
+        if self._mode in [mode.ETHERNET, None]:
+            try:
+                for c in controller.get_ethernet_controllers():
+                    if c[0] == serial_num:
+                        self._mode = mode.ETHERNET
+                        return c[1]
+            except TypeError:
+                pass
+        raise ValueError(f'Controller with serial number {serial_num} not connected.')
 
     def __init__(self, conn_mode: mode = None,
                  baudrate: int = 38400, port: str = None, serial_num: str = None, ip: str = None):
@@ -125,13 +132,12 @@ class controller:
             ValueError: If invalid connection mode is given.
         """
         self._mode = conn_mode
-        if self._mode is None:
-            if isinstance(serial_num, str):
-                self._mode, param = self._get_controller_by_serial_number(serial_num)
-                if self._mode == mode.USB:
-                    port = param
-                elif self._mode == mode.ETHERNET:
-                    ip = param
+        if isinstance(serial_num, str):
+            param = self._get_controller_by_serial_number(serial_num)
+            if self._mode == mode.USB:
+                port = param
+            elif self._mode == mode.ETHERNET:
+                ip = param
 
         if self._mode == mode.USB:
             self._usb = serial.Serial()
@@ -141,23 +147,11 @@ class controller:
                 raise ValueError('Invalid baud rate')
             if isinstance(port, str):
                 self._usb.port = port
-            else:
-                if isinstance(serial_num, str):
-                    self._mode, self._usb.port = self._get_controller_by_serial_number(serial_num)
-                    if self._mode != mode.USB:
-                        raise ValueError('Invalid connection mode')
-                else:
-                    raise ValueError('Invalid port')
         elif self._mode == mode.ETHERNET:
             if isinstance(ip, str):
                 self._controller_address = ip
             else:
-                if isinstance(serial_num, str):
-                    self._mode, self._controller_address = self._get_controller_by_serial_number(serial_num)
-                    if self._mode != mode.ETHERNET:
-                        raise ValueError('Invalid connection mode')
-                else:
-                    raise ValueError('Invalid IP address')
+                raise ValueError('Invalid IP address')
         else:
             raise ValueError('Invalid connection mode')
 
