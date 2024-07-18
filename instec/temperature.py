@@ -1,7 +1,7 @@
 """Command set for temperature commands.
 """
 
-
+from ast import literal_eval
 from instec.command import command
 from instec.constants import (temperature_mode, system_status,
                               unit, profile_status)
@@ -84,7 +84,7 @@ class temperature(command):
                             all connected slaves
         """
         pv_raw = self._controller._send_command('TEMP:CTEM?')
-        pv = eval(f'({pv_raw},)')
+        pv = literal_eval(f'({pv_raw},)')
         return pv
 
     def get_monitor_values(self):
@@ -95,7 +95,7 @@ class temperature(command):
                             connected slaves
         """
         mv_raw = self._controller._send_command('TEMP:MTEM?')
-        mv = eval(f'({mv_raw},)')
+        mv = literal_eval(f'({mv_raw},)')
         return mv
 
     def get_protection_sensors(self):
@@ -105,7 +105,7 @@ class temperature(command):
             (float tuple): Protection sensor value of all connected slaves.
         """
         ps_raw = self._controller._send_command('TEMP:PTEM?')
-        ps = eval(f'({ps_raw},)')
+        ps = literal_eval(f'({ps_raw},)')
         return ps
 
     def hold(self, tsp: float):
@@ -130,6 +130,17 @@ class temperature(command):
                 raise ValueError('Set point value is out of range')
         else:
             raise ValueError('Set point value is out of range')
+        
+    def _hold_no_check(self, tsp:float):
+        """Same as normal hold function, but has no error check. This function
+        should not be used unless latency is crucial.
+
+        Args:
+            tsp (float):    Target Set Point (TSP) – Final target temperature
+                            for Hold or Ramp command (°C)
+        """
+        self._controller._send_command(
+            f'TEMP:HOLD {float(tsp)}', False)
 
     def ramp(self, tsp: float, rt: float):
         """Takes the desired setpoint (tsp) and ramp rate (rt) as parameters,
@@ -161,6 +172,19 @@ class temperature(command):
         else:
             raise ValueError('Set point value is out of range')
 
+    def _ramp_no_check(self, tsp: float, rt: float):
+        """Same as normal ramp function, but has no error check. This function
+        should not be used unless latency is crucial.
+
+        Args:
+            tsp (float):    Target Set Point (TSP) – Final target temperature
+                            for Hold or Ramp command (°C)
+            rt (float):     Ramp Rate (RT) – Rate of PV change during Ramp
+                            command (°C/minute)
+        """
+        self._controller._send_command(
+            f'TEMP:RAMP {float(tsp)},{float(rt)}; ERR?')
+
     def rpp(self, pp: float):
         """Takes the desired power level (PP) as a parameter, and will
         attempt to reach the PP level as fast as possible, and hold that value
@@ -176,6 +200,15 @@ class temperature(command):
             self._controller._send_command(f'TEMP:RPP {float(pp)}', False)
         else:
             raise ValueError('Power percentage is out of range')
+        
+    def _rpp_no_check(self, pp: float):
+        """Same as normal rpp function, but has no error check. This function
+        should not be used unless latency is crucial.
+
+        Args:
+            pp (float, optional): Value between -1.0 and 1.0.
+        """
+        self._controller._send_command(f'TEMP:RPP {float(pp)}', False)
 
     def stop(self):
         """Stops all currently running commands.
