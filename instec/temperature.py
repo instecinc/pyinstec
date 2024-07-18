@@ -183,7 +183,7 @@ class temperature(command):
                             command (°C/minute)
         """
         self._controller._send_command(
-            f'TEMP:RAMP {float(tsp)},{float(rt)}; ERR?')
+            f'TEMP:RAMP {float(tsp)},{float(rt)}', False)
 
     def rpp(self, pp: float):
         """Takes the desired power level (PP) as a parameter, and will
