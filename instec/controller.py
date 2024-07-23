@@ -26,7 +26,7 @@ class udp_singleton:
                 cls.sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 cls.sender.setsockopt(
                     socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            return cls.instance
+        return cls.instance
 
     def _get_eth_addr():
         if isinstance(connection.IP_ADDRESS, str):
@@ -116,7 +116,7 @@ class controller:
             except Exception:
                 continue
 
-            return controller.usb
+        return controller.usb
 
     def _get_controller_by_serial_number(self, serial_num: str):
         """Find the controller connection info by serial number.
