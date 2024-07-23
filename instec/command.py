@@ -8,12 +8,13 @@ from instec.controller import controller, mode
 class command:
     def get_ethernet_controllers():
         return controller.get_ethernet_controllers()
-    
+
     def get_usb_controllers():
         return controller.get_usb_controllers()
-    
+
     def __init__(self, conn_mode: mode = None,
-                 baudrate: int = 38400, port: str = None, serial_num: str = None, ip: str = None):
+                 baudrate: int = 38400, port: str = None,
+                 serial_num: str = None, ip: str = None):
         """Initialize any relevant attributes necessary to connect to the
         controller, and define the connection mode.
 
@@ -25,7 +26,8 @@ class command:
             port (str, optional):       Serial port (for USB only).
                                         Defaults to None.
         """
-        self._controller = controller(conn_mode, baudrate, port, serial_num, ip)
+        self._controller = controller(conn_mode, baudrate,
+                                      port, serial_num, ip)
 
     def connect(self):
         """Connect to controller via selected connection mode.

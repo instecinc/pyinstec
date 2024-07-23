@@ -6,8 +6,11 @@ import serial
 from serial.tools import list_ports
 import socket
 import sys
-if sys.platform.startswith('linux'): import fcntl, struct
+if sys.platform.startswith('linux'):
+    import fcntl
+    import struct
 from instec.constants import mode, connection
+
 
 class udp_singleton:
     def __new__(cls):
@@ -17,13 +20,14 @@ class udp_singleton:
                 cls.receiver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 cls.receiver.bind(
                     ((udp_singleton._get_eth_addr()
-                        ), 50291))
+                      ), 50291))
                 cls.receiver.settimeout(connection.TIMEOUT)
             if not hasattr(cls, 'sender'):
                 cls.sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                cls.sender.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+                cls.sender.setsockopt(
+                    socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
             return cls.instance
-    
+
     def _get_eth_addr():
         if isinstance(connection.IP_ADDRESS, str):
             return connection.IP_ADDRESS
@@ -36,27 +40,30 @@ class udp_singleton:
                         fcntl.ioctl(
                             s.fileno(),
                             0x8915,
-                            struct.pack('256s', connection.ETHERNET_PORT.encode()))[20:24])
+                            struct.pack('256s',
+                                        connection.ETHERNET_PORT.encode()
+                                        ))[20:24])
             except Exception as error:
                 raise RuntimeError('Issue finding ethernet port') from error
         else:
             raise RuntimeError('Unsupported OS')
-                
+
 
 class controller:
     """All basic communication functions to interface with the MK2000/MK2000B.
     """
-    udp = udp_singleton()
     ethernet = []
     usb = []
-    
+
     def get_ethernet_controllers():
         """Get all controllers connected via Ethernet.
 
         Returns:
             List: List of tuples in the form (serial_num, ip)
         """
-        
+
+        controller.udp = udp_singleton()
+
         controller.udp.sender.sendto(
             bytes.fromhex('73C4000001'),
             ('255.255.255.255', 50290))
@@ -71,11 +78,11 @@ class controller:
                 serial_num = data[1]
                 if model.startswith('IoT_MK#MK2000'):
                     controller.ethernet.append((serial_num, addr[0]))
-            except socket.error as error:
+            except socket.error:
                 break
             except Exception as error:
                 raise RuntimeError('Did not receive UDP response') from error
-        
+
         return controller.ethernet
 
     def get_usb_controllers():
@@ -91,21 +98,21 @@ class controller:
             conn.timeout = connection.TIMEOUT
             try:
                 conn.open()
-                
+
                 conn.write(str.encode('TEMP:SNUM?'))
-                
+
                 buffer = conn.readline().decode()
                 while not buffer.endswith('\r\n'):
                     buffer += conn.readline().decode()
-                    
+
                 data = buffer.strip().split(',')
                 company = data[0]
                 model = data[1]
                 serial_num = data[2]
-                
+
                 if company == 'Instec' and model.startswith('MK2000'):
                     controller.usb.append((serial_num, port))
-                
+
             except Exception:
                 continue
 
@@ -121,9 +128,10 @@ class controller:
             ValueError: If a controller with the serial number is not found.
 
         Returns:
-            List: List of tuples in the form (serial_num, param). where param is
-                  either the port (USB) or IP address (Ethernet)
+            List: List of tuples in the form (serial_num, param). where param
+                  is either the port (USB) or IP address (Ethernet)
         """
+
         if self._mode in [mode.USB, None]:
             try:
                 for c in controller.usb:
@@ -148,10 +156,12 @@ class controller:
                         return c[1]
             except TypeError:
                 pass
-        raise ValueError(f'Controller with serial number {serial_num} not connected.')
+        raise ValueError(f'Controller with serial number'
+                         f'{serial_num} not connected.')
 
     def __init__(self, conn_mode: mode = None,
-                 baudrate: int = 38400, port: str = None, serial_num: str = None, ip: str = None):
+                 baudrate: int = 38400, port: str = None,
+                 serial_num: str = None, ip: str = None):
         """Initialize any relevant attributes necessary to connect to the
         controller, and define the connection mode.
 
@@ -164,7 +174,8 @@ class controller:
                                         Defaults to None.
             serial_num (str, optional): Serial number of controller.
                                         Defaults to None.
-            ip (str, optional):         IP address of controller (Ethernet mode only).
+            ip (str, optional):         IP address of controller
+                                        (Ethernet mode only).
                                         Defaults to None.
 
         Raises:
@@ -195,7 +206,6 @@ class controller:
             raise ValueError('Invalid connection mode')
 
     def connect(self):
-
         """Connect to controller via selected connection mode.
 
         Raises:
@@ -215,12 +225,10 @@ class controller:
                 socket.AF_INET,
                 socket.SOCK_STREAM)
             self._tcp_socket.settimeout(10)
-
             try:
                 self._tcp_socket.connect((self._controller_address, 50292))
             except OSError as error:
-                if error.winerror == 10054:
-                    self._tcp_socket.connect((self._controller_address, 50292))
+                raise RuntimeError('Issues connecting to device') from error
             except Exception as error:
                 raise RuntimeError('Unable to establish '
                                    'TCP connection') from error
@@ -268,9 +276,8 @@ class controller:
                 return True
             except ConnectionResetError:
                 return False
-            except OSError as error:
-                if sys.platform == 'win32' and error.winerror == 10038:
-                    return False
+            except OSError:
+                return False
             except ValueError:
                 return False
             except Exception as error:
@@ -278,9 +285,8 @@ class controller:
             finally:
                 try:
                     self._tcp_socket.settimeout(timeout)
-                except OSError as error:
-                    if sys.platform == "win32" and error.winerror == 10038:
-                        pass
+                except OSError:
+                    pass
                 except AttributeError:
                     return False
         else:

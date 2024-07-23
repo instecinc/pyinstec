@@ -76,6 +76,12 @@ To check if a controller is connected, call
 controller.is_connected()
 ```
 
+For the majority of users running the library on Linux, the designated Ethernet port is 'eth0'. In cases where a different Ethernet port is utilized to connect with the controller, modify the ETHERNET_PORT constant.
+For example, to switch the Ethernet port to 'eth1':
+```python
+instec.connection.ETHERNET_PORT = 'eth1'
+```
+
 ### Functions
 
 All functions in instec.py are instance methods, meaning they must be called with an instance of the controller. For example,

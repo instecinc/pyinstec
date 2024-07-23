@@ -130,8 +130,8 @@ class temperature(command):
                 raise ValueError('Set point value is out of range')
         else:
             raise ValueError('Set point value is out of range')
-        
-    def _hold_no_check(self, tsp:float):
+
+    def _hold_no_check(self, tsp: float):
         """Same as normal hold function, but has no error check. This function
         should not be used unless latency is crucial.
 
@@ -200,7 +200,7 @@ class temperature(command):
             self._controller._send_command(f'TEMP:RPP {float(pp)}', False)
         else:
             raise ValueError('Power percentage is out of range')
-        
+
     def _rpp_no_check(self, pp: float):
         """Same as normal rpp function, but has no error check. This function
         should not be used unless latency is crucial.
