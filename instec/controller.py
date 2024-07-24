@@ -215,6 +215,7 @@ class controller:
             self._tcp_socket = socket.socket(
                 socket.AF_INET,
                 socket.SOCK_STREAM)
+            # Change connection.TIMEOUT to adjust timeout
             self._tcp_socket.settimeout(connection.TIMEOUT)
             try:
                 self._tcp_socket.connect((self._controller_address, 50292))
