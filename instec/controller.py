@@ -12,21 +12,11 @@ if sys.platform.startswith('linux'):
 from instec.constants import mode, connection
 
 
-class udp_singleton:
-    def __new__(cls):
-        if not hasattr(cls, 'instance'):
-            cls.instance = super(udp_singleton, cls).__new__(cls)
-            if not hasattr(cls, 'receiver'):
-                cls.receiver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                cls.receiver.bind(
-                    ((udp_singleton._get_eth_addr()
-                      ), 50291))
-                cls.receiver.settimeout(connection.TIMEOUT)
-            if not hasattr(cls, 'sender'):
-                cls.sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                cls.sender.setsockopt(
-                    socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        return cls.instance
+class controller:
+    """All basic communication functions to interface with the MK2000/MK2000B.
+    """
+    ethernet = []
+    usb = []
 
     def _get_eth_addr():
         if isinstance(connection.IP_ADDRESS, str):
@@ -48,42 +38,43 @@ class udp_singleton:
         else:
             raise RuntimeError('Unsupported OS')
 
-
-class controller:
-    """All basic communication functions to interface with the MK2000/MK2000B.
-    """
-    ethernet = []
-    usb = []
-
     def get_ethernet_controllers():
         """Get all controllers connected via Ethernet.
 
         Returns:
             List: List of tuples in the form (serial_num, ip)
         """
+        with (
+            socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as receiver,
+                socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sender):
 
-        controller.udp = udp_singleton()
+            receiver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            receiver.bind((controller._get_eth_addr(), 50291))
+            receiver.settimeout(connection.TIMEOUT)
 
-        controller.udp.sender.sendto(
-            bytes.fromhex('73C4000001'),
-            ('255.255.255.255', 50290))
+            sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sender.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            sender.sendto(
+                bytes.fromhex('73C4000001'),
+                ('255.255.255.255', 50290))
 
-        controller.ethernet = []
-        while True:
-            try:
-                buffer, addr = controller.udp.receiver.recvfrom(1024)
-                buffer = buffer.decode()
-                data = buffer.strip().split(':')
-                model = data[0]
-                serial_num = data[1]
-                if model.startswith('IoT_MK#MK2000'):
-                    controller.ethernet.append((serial_num, addr[0]))
-            except socket.error:
-                break
-            except Exception as error:
-                raise RuntimeError('Did not receive UDP response') from error
+            controller.ethernet = []
+            while True:
+                try:
+                    buffer, addr = receiver.recvfrom(1024)
+                    buffer = buffer.decode()
+                    data = buffer.strip().split(':')
+                    model = data[0]
+                    serial_num = data[1]
+                    if model.startswith('IoT_MK#MK2000'):
+                        controller.ethernet.append((serial_num, addr[0]))
+                except socket.error:
+                    break
+                except Exception as error:
+                    raise RuntimeError(
+                        'Did not receive UDP response') from error
 
-        return controller.ethernet
+            return controller.ethernet
 
     def get_usb_controllers():
         """Get all controllers connected via USB.
