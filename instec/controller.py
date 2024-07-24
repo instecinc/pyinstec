@@ -215,7 +215,7 @@ class controller:
             self._tcp_socket = socket.socket(
                 socket.AF_INET,
                 socket.SOCK_STREAM)
-            self._tcp_socket.settimeout(10)
+            self._tcp_socket.settimeout(connection.TIMEOUT)
             try:
                 self._tcp_socket.connect((self._controller_address, 50292))
             except OSError as error:
