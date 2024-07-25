@@ -85,7 +85,7 @@ class controller:
         ports = list_ports.comports()
         controller.usb = []
         for port in ports:
-            conn = serial.Serial(port.name)
+            conn = serial.Serial(port.device)
             conn.timeout = connection.TIMEOUT
             try:
                 conn.open()
