@@ -85,27 +85,24 @@ class controller:
         ports = list_ports.comports()
         controller.usb = []
         for port in ports:
-            conn = serial.Serial(port.device)
-            conn.timeout = connection.TIMEOUT
-            try:
-                conn.open()
+            with serial.Serial(port.device,
+                               timeout=connection.TIMEOUT) as conn:
+                try:
+                    conn.write(str.encode('*IDN?\r\n'))
 
-                conn.write(str.encode('TEMP:SNUM?'))
+                    buffer = conn.readline().decode()
+                    while not buffer.endswith('\r\n'):
+                        buffer += conn.readline().decode()
 
-                buffer = conn.readline().decode()
-                while not buffer.endswith('\r\n'):
-                    buffer += conn.readline().decode()
+                    data = buffer.strip().split(',')
+                    company = data[0]
+                    model = data[1]
+                    serial_num = data[2]
 
-                data = buffer.strip().split(',')
-                company = data[0]
-                model = data[1]
-                serial_num = data[2]
-
-                if company == 'Instec' and model.startswith('MK2000'):
-                    controller.usb.append((serial_num, port.device))
-
-            except Exception:
-                continue
+                    if company == 'Instec' and model.startswith('MK2000'):
+                        controller.usb.append((serial_num, port.device))
+                except Exception:
+                    continue
 
         return controller.usb
 
