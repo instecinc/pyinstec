@@ -7,6 +7,9 @@ Before using this library, it is highly recommended that you read through the SC
 - Github Page: https://github.com/instecinc/pyinstec
 - Download Page: https://pypi.org/project/instec/
 
+## Temperature Controller Compatability
+In it's current form, the Instec Python library is only compatible with mK2000B temperature controllers - These controllers can easily be identified by the large 7" touchpad on the front panel. older controllers, such as the mK2000VCP, have only limited support. To verify if your controller is supported by the Instec Python Library, check the FW version number from the controller "About" screen. If the FW version number starts with a "6", it should be compatible with this library. Controllers with FW version sstarting with "3" or "4" only have limited support. 
+
 ## Installation
 Currently, the library only supports Python versions 3.10 or later, but may change later on to support older versions. It has been tested on Windows 11 in the Visual Studio Code development environment.
 
