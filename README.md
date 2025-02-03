@@ -8,7 +8,7 @@ Before using this library, it is highly recommended that you read through the SC
 - Download Page: https://pypi.org/project/instec/
 
 ## Temperature Controller Compatability
-In it's current form, the Instec Python library is only compatible with mK2000B temperature controllers - These controllers can easily be identified by the large 7" touchpad on the front panel. older controllers, such as the mK2000VCP, have only limited support. To verify if your controller is supported by the Instec Python Library, check the FW version number from the controller "About" screen. If the FW version number starts with a "6", it should be compatible with this library. Controllers with FW version sstarting with "3" or "4" only have limited support. 
+In it's current form, the Instec Python library is compatible with mK2000B temperature controllers - these controllers can easily be identified by the large 7" touchpad on the front panel - with **limited** support for mK2000VCP controllers. See the "Compatibility" section for more information.
 
 ## Installation
 Currently, the library only supports Python versions 3.10 or later, but may change later on to support older versions. It has been tested on Windows 11 in the Visual Studio Code development environment.
@@ -36,28 +36,28 @@ then you can use the functions associated with the library.
 
 ### Connection
 
-To connect to the MK2000/MK2000B controller, first choose whether to connect over USB or Ethernet, and setup the connection to the device over the desired connection type.
+To connect to the MK2000B/MK2000VCP controller, first choose whether to connect over USB or Ethernet, and setup the connection to the device over the desired connection type.
 
 If you are unsure of what port or IP address your current controller has, you can call the commands `get_ethernet_controllers()` to retrieve all controllers connected via Ethernet and `get_usb_controllers()` to retrieve all controllers connected via USB. These functions will return a list of tuples of the serial number and IP address, and the serial number and port, respectively.
 
-The controller can be instantiated in 3 different ways:
+The controller can be instantiated in 3 different ways (Note: replace instec.MK2000B with instec.MK2000VCP if using an MK2000VCP controller):
 
 If the connection mode is USB and the port is known:
 ```python
-controller = instec.MK2000(instec.mode.USB, baudrate, port)
+controller = instec.MK2000B(instec.mode.USB, baudrate, port)
 ```
 Where `baudrate` and `port` are the baud rate and port of the device, respectively.
 By default the baud rate is 38400.
 
 If the connection mode is Ethernet and the IP address is known:
 ```python
-controller = instec.MK2000(instec.mode.ETHERNET, ip)
+controller = instec.MK2000B(instec.mode.ETHERNET, ip)
 ```
 Where `ip` is the IP address of the controller.
 
 If the connection mode is unknown and the serial number is known:
 ```python
-controller = instec.MK2000(serial_num)
+controller = instec.MK2000B(serial_num)
 ```
 Where serial_num is the serial number of the device.
 
@@ -100,49 +100,48 @@ to query important runtime information from the controller and execute temperatu
 profiles, which can be run directly on the controller without external input.
 
 #### Temperature Commands
-
 There are a total of 33 SCPI temperature commands implemented as Python functions in this library.
 
-| SCPI Command                  | Python Function               | Usage                                     |
-| :---------------------------: |:----------------------------: | :---------------------------------------: |
-| *IDN?                         | get_system_information()      | Get system info                           |
-| TEMPerature:RTINformation?    | get_runtime_information()     | Get runtime info                          |
-| TEMPerature:CTEMperature?     | get_process_variables()       | Get PV temperatures                       |
-| TEMPerature:MTEMperature?     | get_monitor_values()          | Get MV temperatures                       |
-| TEMPerature:PTEMperature?     | get_protection_sensors()      | Get protection sensor temperatures        |
-| TEMPerature:HOLD tsp          | hold(tsp)                     | Hold at TSP temperature                   |
-| TEMPerature:RAMP tsp,rt       | ramp(tsp, rt)                 | Ramp to TSP temperature                   |
-| TEMPerature:RPP pp            | rpp(pp)                       | Run at PP power level                     |
-| TEMPerature:STOP              | stop()                        | Stop all temperature control              |
-| TEMPerature:PID?              | get_current_pid()             | Get current PID value                     |
-| TEMPerature:GPID state,index  | get_pid(state, index)         | Get PID at specified table and index      |
-| TEMPerature:SPID state,index,temp,p,i,d | set_pid(state, index, temp, p, i, d) | Set PID at specified table and index |
-| TEMPerature:CHSWitch?         | get_cooling_heating_status()  | Get the Heating/Cooling mode of the controller |
-| TEMPerature:CHSWitch status   | set_cooling_heating_status(status)| Set the Heating/Cooling mode of the controller |
-| TEMPerature:SRANge?           | get_stage_range()             | Get the stage temperature range           |
-| TEMPerature:RANGe?            | get_operation_range()         | Get the operation temperature range       |
-| TEMPerature:RANGe max,min     | set_operation_range(max, min) | Set the operation temperature range       |
-| TEMPerature:DRANge?           | get_default_operation_range() | Get the default operation temperature range |
-| TEMPerature:STATus?           | get_system_status()           | Get the current system status             |
-| TEMPerature:SNUMber?          | get_serial_number()           | Get the system serial number              |
-| TEMPerature:SPOint?           | get_set_point_temperature()   | Get the set point (TSP) temperature       |
-| TEMPerature:RATe?             | get_ramp_rate()               | Get the current ramp rate                 |
-| TEMPerature:RTRange?          | get_ramp_rate_range()         | Get the range of the ramp rate            |
-| TEMPerature:POWer?            | get_power()                   | Get the current power value               |
-| TEMPerature:TP?               | get_powerboard_temperature()  | Get the current powerboard RTD temperature |
-| TEMPerature:ERRor?            | get_error()                   | Get the current error                     |
-| TEMPerature:OPSLave?          | get_operating_slave()         | Get the operating slave                   |
-| TEMPerature:OPSLave slave     | set_operating_slave(slave)    | Set the operating slave                   |
-| TEMPerature:SLAVes?           | get_slave_count()             | Get the number of connected slaves        |
-| TEMPerature:PURGe delay,hold  | purge(delay, hold)            | Complete a gas purge for the specified duration |
-| TEMPerature:TCUNit?           | get_pv_unit_type()            | Get unit type of PV                       |
-| TEMPerature:TMUNit?           | get_mv_unit_type()            | Get unit type of MV                       |
-| TEMPerature:PRECision?        | get_precision()               | Get the decimal precision of PV and MV    |
+| Python Function                       | Usage                                                 | MK2000B SCPI Command                      | MK2000VCP SCPI Command                    |
+|:----------------------------:         | :---------------------------------------:             | :---------------------------:             | :---------------------------:             |
+| get_system_information()              | Get system info                                       | *IDN?                                     | *IDN?                                     |
+| get_runtime_information()             | Get runtime info                                      | TEMPerature:RTINformation?                | TEMPerature:RTINformation?                |
+| get_process_variables()               | Get PV temperatures                                   | TEMPerature:CTEMperature?                 | TEMPerature:CTEMperature?                 |
+| get_monitor_values()                  | Get MV temperatures                                   | TEMPerature:MTEMperature?                 | TEMPerature:MTEMperature?                 |
+| get_protection_sensors()              | Get protection sensor temperatures                    | TEMPerature:PTEMperature?                 | N/A                                       |
+| hold(tsp)                             | Hold at TSP temperature                               | TEMPerature:HOLD tsp                      | TEMPerature:HOLD tsp                      |
+| ramp(tsp, rt)                         | Ramp to TSP temperature                               | TEMPerature:RAMP tsp,rt                   | TEMPerature:RAMP tsp,rt                   |
+| rpp(pp)                               | Run at PP power level                                 | TEMPerature:RPP pp                        | TEMPerature:RPP pp                        |
+| stop()                                | Stop all temperature control                          | TEMPerature:STOP                          | TEMPerature:STOP                          |
+| get_cooling_heating_status()          | Get the Heating/Cooling mode of the controller        | TEMPerature:CHSWitch?                     | TEMPerature:COOLing?                      |
+| set_cooling_heating_status(status)    | Set the Heating/Cooling mode of the controller        | TEMPerature:CHSWitch status               | TEMPerature:COOLing status                |
+| get_stage_range()                     | Get the stage temperature range                       | TEMPerature:SRANge?                       | N/A                                       |
+| get_operation_range()                 | Get the operation temperature range                   | TEMPerature:RANGe?                        | TEMPerature:RANGe?                        |
+| set_operation_range(max, min)         | Set the operation temperature range                   | TEMPerature:RANGe max,min                 | TEMPerature:RANGe max,min                 |
+| get_default_operation_range()         | Get the default operation temperature range           | TEMPerature:DRANge?                       | N/A                                       |
+| get_system_status()                   | Get the current system status                         | TEMPerature:STATus?                       | TEMPerature:STATus?                       |
+| get_serial_number()                   | Get the system serial number                          | TEMPerature:SNUMber?                      | TEMPerature:SNUMber?                      |
+| get_set_point_temperature()           | Get the set point (TSP) temperature                   | TEMPerature:SPOint?                       | TEMPerature:SPOint?                       |
+| get_ramp_rate()                       | Get the current ramp rate                             | TEMPerature:RATe?                         | N/A                                       |
+| get_ramp_rate_range()                 | Get the range of the ramp rate                        | TEMPerature:RTRange?                      | N/A                                       |
+| get_power()                           | Get the current power value                           | TEMPerature:POWer?                        | N/A                                       |
+| get_powerboard_temperature()          | Get the current powerboard RTD temperature            | TEMPerature:TP?                           | N/A                                       |
+| get_error()                           | Get the current error                                 | TEMPerature:ERRor?                        | N/A                                       |
+| get_operating_slave()                 | Get the operating slave                               | TEMPerature:OPSLave?                      | TEMPerature:OPSLave?                      |
+| set_operating_slave(slave)            | Set the operating slave                               | TEMPerature:OPSLave slave                 | TEMPerature:OPSLave slave                 |
+| get_slave_count()                     | Get the number of connected slaves                    | TEMPerature:SLAVes?                       | TEMPerature:SLAVes?                       |
+| purge(delay, hold)                    | Complete a gas purge for the specified duration       | TEMPerature:PURGe delay,hold              | TEMPerature:PURGe delay,hold              |
+| get_pv_unit_type()                    | Get unit type of PV                                   | TEMPerature:TCUNit?                       | N/A                                       |
+| get_mv_unit_type()                    | Get unit type of MV                                   | TEMPerature:TMUNit?                       | N/A                                       |
+| get_precision()                       | Get the decimal precision of PV and MV                | TEMPerature:PRECision?                    | N/A                                       |
 
 7 additional functions have been implemented as well:
 
 | Python Function               | Usage                                                   |
 |:----------------------------: | :-----------------------------------------------------: |
+| hold_check()                  | Execute hold function with operation range check; automatically stop controller if set value is out of range |
+| ramp_check()                  | Execute ramp function with operation/rate range check; automatically stop controller if set value is out of range |
+| rpp_check()                   | Execute rpp function with power range check; automatically stop controller if set value is out of range |
 | get_process_variable()        | Get the process variable of the current operating slave |
 | get_monitor_value()           | Get the monitor value of the current operating slave    |
 | get_protection_sensor()       | Get the protection sensor value of the current operating slave |
@@ -153,25 +152,40 @@ There are a total of 33 SCPI temperature commands implemented as Python function
 
 More information on the Python temperature commands can be found in the temperature.py and pid.py files.
 
+#### PID Commands
+There are a total of 3 SCPI PID commands implemented as Python functions in this library. Note that these commands only work with MK2000B models.
+
+| Python Function                       | Usage                                                 | MK2000B SCPI Command                      |
+|:----------------------------:         | :---------------------------------------:             | :---------------------------:             |
+| get_current_pid()                     | Get current PID value                                 | TEMPerature:PID?                          |
+| get_pid(state, index)                 | Get PID at specified table and index                  | TEMPerature:GPID state,index              |
+| set_pid(state, index, temp, p, i, d)  | Set PID at specified table and index                  | TEMPerature:SPID state,index,temp,p,i,d   |
+
+1 additional function has been implemented as well:
+
+| Python Function               | Usage                                                   |
+|:----------------------------: | :-----------------------------------------------------: |
+| is_valid_pid_index(i)         | Check if pid index is valid                             |
+
 #### Profile Commands
 
-There are a total of 13 SCPI profile commands implemented as Python functions in this library.
+There are a total of 13 SCPI profile commands implemented as Python functions in this library. Note that these commands only work with MK2000B models.
 
-| SCPI Command                  | Python Function               | Usage                                     |
-| :---------------------------: |:----------------------------: | :---------------------------------------: |
-| PROFile:RTSTate?              | get_profile_state()           | Get the current profile state             |
-| PROFile:STARt p               | start_profile(p)              | Start the selected profile.               |
-| PROFile:PAUSe                 | pause_profile()               | Pauses the currently running profile      |
-| PROFile:RESume                | resume_profile()              | Resumes the current profile               |
-| PROFile:STOP                  | stop_profile()                | Stops the current profile                 |
-| PROFile:EDIT:PDELete p        | delete_profile(p)             | Delete the selected profile               |
-| PROFile:EDIT:IDELete p,i      | delete_profile_item(p, i)     | Delete the selected profile item          |
-| PROFile:EDIT:IINSert p,i,c,b1,b2 | insert_profile_item(p, i, c, b1, b2) | Insert the selected item into the selected profile |
-| PROFile:EDIT:IEDit p,i,c,b1,b2 | set_profile_item(p, i, c, b1, b2) | Set the selected item in the selected profile |
-| PROFile:EDIT:IREad p,i        | get_profile_item(p, i)        | Get the selected item from the selected profile |
-| PROFile:EDIT:ICount p         | get_profile_item_count(p)     | Get the number of items in the selected profile |
-| PROFile:EDIT:GNAMe p          | get_profile_name(p)           | Get the profile name of the selected profile |
-|PROFile:EDIT:SNAMe p,"name"    | set_profile_name(p, name)     | Set the profile name of the selected profile |
+| Python Function                       | Usage                                                     | MK2000B SCPI Command              |
+|:----------------------------:         | :---------------------------------------:                 | :---------------------------:     |
+| get_profile_state()                   | Get the current profile state                             | PROFile:RTSTate?                  |
+| start_profile(p)                      | Start the selected profile.                               | PROFile:STARt p                   |
+| pause_profile()                       | Pauses the currently running profile                      | PROFile:PAUSe                     |
+| resume_profile()                      | Resumes the current profile                               | PROFile:RESume                    |
+| stop_profile()                        | Stops the current profile                                 | PROFile:STOP                      |
+| delete_profile(p)                     | Delete the selected profile                               | PROFile:EDIT:PDELete p            |
+| delete_profile_item(p, i)             | Delete the selected profile item                          | PROFile:EDIT:IDELete p,i          |
+| insert_profile_item(p, i, c, b1, b2)  | Insert the selected item into the selected profile        | PROFile:EDIT:IINSert p,i,c,b1,b2  |
+| set_profile_item(p, i, c, b1, b2)     | Set the selected item in the selected profile             | PROFile:EDIT:IEDit p,i,c,b1,b2    |
+| get_profile_item(p, i)                | Get the selected item from the selected profile           | PROFile:EDIT:IREad p,i            |
+| get_profile_item_count(p)             | Get the number of items in the selected profile           | PROFile:EDIT:ICount p             |
+| get_profile_name(p)                   | Get the profile name of the selected profile              | PROFile:EDIT:GNAMe p              |
+| set_profile_name(p, name)             | Set the profile name of the selected profile              | PROFile:EDIT:SNAMe p,"name"       |
 
 3 additional functions have been implemented as well:
 
@@ -182,6 +196,72 @@ There are a total of 13 SCPI profile commands implemented as Python functions in
 | is_valid_item_index(i)       | Check if selected item index is valid                    |
 
 More information on the Python profile commands can be found in profile.py.
+
+#### Compatibility
+The compatibility for all Python functions is listed below. Python functions that are not supported by their respective devices will raise a NotImplementedError when called.
+
+| Category                              | Python Function                       | MK2000B Support                     | MK2000VCP Support                   | Notes                               |
+|:----------------------------:         | :---------------------------:         | :---------------------------:       | :---------------------------:       | :---------------------------:       |
+| Temperature                           | get_system_information()              | Supported                           | Supported*                          | *MK2000VCP utilizes a different raw return string, so the function uses get_serial_number() to return the serial number in addition to the other information provided. |
+| Temperature                           | get_runtime_information()             | Supported                           | Supported*                          | *MK2000VCP has no error reporting functionality, and will return -1 for the error code. |
+| Temperature                           | get_process_variables()               | Supported                           | Supported                           |                                     |
+| Temperature                           | get_monitor_values()                  | Supported                           | Supported                           |                                     |
+| Temperature                           | get_protection_sensors()              | Supported                           | Not Supported                       |                                     |
+| Temperature                           | hold(tsp)                             | Supported                           | Supported                           |                                     |
+| Temperature                           | ramp(tsp, rt)                         | Supported                           | Supported                           |                                     |
+| Temperature                           | rpp(pp)                               | Supported                           | Supported                           |                                     |
+| Temperature                           | stop()                                | Supported                           | Supported                           |                                     |
+| Temperature                           | get_cooling_heating_status()          | Supported                           | Supported                           |                                     |
+| Temperature                           | set_cooling_heating_status(status)    | Supported                           | Supported                           |                                     |
+| Temperature                           | get_stage_range()                     | Supported                           | Not Supported                       |                                     |
+| Temperature                           | get_operation_range()                 | Supported                           | Supported                           |                                     |
+| Temperature                           | set_operation_range(max, min)         | Supported                           | Supported                           |                                     |
+| Temperature                           | get_default_operation_range()         | Supported                           | Not Supported                       |                                     |
+| Temperature                           | get_system_status()                   | Supported                           | Supported                           |                                     |
+| Temperature                           | get_serial_number()                   | Supported                           | Supported                           |                                     |
+| Temperature                           | get_set_point_temperature()           | Supported                           | Supported                           |                                     |
+| Temperature                           | get_ramp_rate()                       | Supported                           | Supported*                          | *MK2000VCP has no dedicated ramp rate SCPI query, so the function uses get_runtime_information() to retrieve the ramp rate value. |
+| Temperature                           | get_ramp_rate_range()                 | Supported                           | Not Supported                       |                                     |
+| Temperature                           | get_power()                           | Supported                           | Supported*                          | *MK2000VCP has no dedicated power percent SCPI query, so the function uses get_runtime_information() to retrieve the power percent value. |
+| Temperature                           | get_powerboard_temperature()          | Supported                           | Not Supported                       |                                     |
+| Temperature                           | get_error()                           | Supported                           | Not Supported                       |                                     |
+| Temperature                           | get_operating_slave()                 | Supported                           | Supported                           |                                     |
+| Temperature                           | set_operating_slave(slave)            | Supported                           | Supported                           |                                     |
+| Temperature                           | get_slave_count()                     | Supported                           | Supported                           |                                     |
+| Temperature                           | purge(delay, hold)                    | Supported                           | Supported                           |                                     |
+| Temperature                           | get_pv_unit_type()                    | Supported                           | Not Supported                       |                                     |
+| Temperature                           | get_mv_unit_type()                    | Supported                           | Not Supported                       |                                     |
+| Temperature                           | get_precision()                       | Supported                           | Not Supported                       |                                     |
+| Temperature                           | hold_check()                          | Supported                           | Supported                           |                                     |
+| Temperature                           | ramp_check()                          | Supported                           | Supported                           |                                     |
+| Temperature                           | rpp_check()                           | Supported                           | Supported                           |                                     |
+| Temperature                           | get_process_variable()                | Supported                           | Supported                           |                                     |
+| Temperature                           | get_monitor_value()                   | Supported                           | Supported                           |                                     |
+| Temperature                           | get_protection_sensor()               | Supported                           | Supported                           |                                     |
+| Temperature                           | get_power_range()                     | Supported                           | Supported                           |                                     |
+| Temperature                           | is_in_power_range(pp)                 | Supported                           | Supported                           |                                     |
+| Temperature                           | is_in_ramp_rate_range(pp)             | Supported                           | Not Supported                       |                                     |
+| Temperature                           | is_in_operation_range(temp)           | Supported                           | Supported                           |                                     |
+| PID                                   | get_current_pid()                     | Supported                           | Not Supported                       |                                     |
+| PID                                   | get_pid(state, index)                 | Supported                           | Not Supported                       |                                     |
+| PID                                   | set_pid(state, index, temp, p, i, d)  | Supported                           | Not Supported                       |                                     |
+| PID                                   | is_valid_pid_index(i)                 | Supported                           | Not Supported                       |                                     |
+| Profile                               | get_profile_state()                   | Supported                           | Not Supported                       |                                     |
+| Profile                               | start_profile(p)                      | Supported                           | Not Supported                       |                                     |
+| Profile                               | pause_profile()                       | Supported                           | Not Supported                       |                                     |
+| Profile                               | resume_profile()                      | Supported                           | Not Supported                       |                                     |
+| Profile                               | stop_profile()                        | Supported                           | Not Supported                       |                                     |
+| Profile                               | delete_profile(p)                     | Supported                           | Not Supported                       |                                     |
+| Profile                               | delete_profile_item(p, i)             | Supported                           | Not Supported                       |                                     |
+| Profile                               | insert_profile_item(p, i, c, b1, b2)  | Supported                           | Not Supported                       |                                     |
+| Profile                               | set_profile_item(p, i, c, b1, b2)     | Supported                           | Not Supported                       |                                     |
+| Profile                               | get_profile_item(p, i)                | Supported                           | Not Supported                       |                                     |
+| Profile                               | get_profile_item_count(p)             | Supported                           | Not Supported                       |                                     |
+| Profile                               | get_profile_name(p)                   | Supported                           | Not Supported                       |                                     |
+| Profile                               | set_profile_name(p, name)             | Supported                           | Not Supported                       |                                     |
+| Profile                               | add_profile_item(p, i, c, b1, b2)     | Supported                           | Not Supported                       |                                     |
+| Profile                               | is_valid_profile(p)                   | Supported                           | Not Supported                       |                                     |
+| Profile                               | is_valid_item_index(i)                | Supported                           | Not Supported                       |                                     |
 
 ### Enums
 

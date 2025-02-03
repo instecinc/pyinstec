@@ -13,7 +13,7 @@ PORT = 'COM3'               # Port for USB mode
 
 # Initialize controller and connect
 print('Connecting to the controller')
-controller = instec.MK2000(MODE, BAUD, PORT)
+controller = instec.MK2000B(MODE, BAUD, PORT)
 controller.connect()
 
 # Check connection - should be True

@@ -1,20 +1,16 @@
 """Command set for profile commands.
 """
 
-
-from instec.command import command
+from abc import ABC, abstractmethod
 from instec.constants import profile_status, profile_item
-from instec.temperature import temperature
 
 
-class profile(command):
+class profile(ABC):
     """All profile related commands.
     """
 
-    PROFILE_NUM = 5
-    ITEM_NUM = 255
-
-    def get_profile_state(self):
+    @abstractmethod
+    def get_profile_state(self) -> tuple[profile_status, int, int]:
         """Get the current profile state.
         p_status (profile_status):    Current profile execution status code
         p (int):            Active profile number
@@ -23,14 +19,10 @@ class profile(command):
         Returns:
             (profile_status, int, int): Profile tuple
         """
-        info = self._controller._send_command('PROF:RTST?').split(',')
-        p_status = profile_status(int(info[0]))
-        p = int(info[1])
-        i = int(info[2])
+        pass
 
-        return p_status, p, i
-
-    def start_profile(self, p: int):
+    @abstractmethod
+    def start_profile(self, p: int) -> None:
         """Start the selected profile.
         Profiles are zero-indexed, ranging from 0 to 4, inclusive, but
         the default names are one-indexed (i.e. 0 corresponds with
@@ -39,29 +31,30 @@ class profile(command):
         Args:
             p (int): Selected profile
         """
-        if self.is_valid_profile(p):
-            self._controller._send_command(f'PROF:STAR {p}', False)
-        else:
-            raise ValueError('Invalid profile')
+        pass
 
-    def pause_profile(self):
+    @abstractmethod
+    def pause_profile(self) -> None:
         """Pauses the currently running profile, if applicable.
         This will allow the currently running instruction to
         finish, stopping before the next command.
         """
-        self._controller._send_command('PROF:PAUS', False)
+        pass
 
-    def resume_profile(self):
+    @abstractmethod
+    def resume_profile(self) -> None:
         """Resumes the currently running profile, if applicable.
         """
-        self._controller._send_command('PROF:RES', False)
+        pass
 
-    def stop_profile(self):
+    @abstractmethod
+    def stop_profile(self) -> None:
         """Stops the currently running/paused profile, if applicable.
         """
-        self._controller._send_command('PROF:STOP', False)
+        pass
 
-    def delete_profile(self, p: int):
+    @abstractmethod
+    def delete_profile(self, p: int) -> None:
         """Delete the selected profile.
         Profiles are zero-indexed, ranging from 0 to 4, inclusive, but
         the default names are one-indexed (i.e. 0 corresponds with
@@ -70,12 +63,10 @@ class profile(command):
         Args:
             p (int): Selected profile
         """
-        if self.is_valid_profile(p):
-            self._controller._send_command(f'PROF:EDIT:PDEL {p}', False)
-        else:
-            raise ValueError('Invalid profile')
+        pass
 
-    def delete_profile_item(self, p: int, i: int):
+    @abstractmethod
+    def delete_profile_item(self, p: int, i: int) -> None:
         """Delete the selected profile item.
         Profiles are zero-indexed, ranging from 0 to 4, inclusive, but
         the default names are one-indexed (i.e. 0 corresponds with
@@ -86,17 +77,11 @@ class profile(command):
             p (int): Selected profile
             i (int): Selected item index
         """
-        if self.is_valid_profile(p):
-            if self.is_valid_item_index(i):
-                self._controller._send_command(
-                    f'PROF:EDIT:IDEL {p},{i}', False)
-            else:
-                raise ValueError('Invalid item index')
-        else:
-            raise ValueError('Invalid profile')
+        pass
 
+    @abstractmethod
     def insert_profile_item(self, p: int, i: int, item: profile_item,
-                            b1: float = None, b2: float = None):
+                            b1: float = None, b2: float = None) -> None:
         """Insert the selected item into the selected profile.
         Profiles are zero-indexed, ranging from 0 to 4, inclusive, but
         the default names are one-indexed (i.e. 0 corresponds with
@@ -110,58 +95,11 @@ class profile(command):
             b1 (float, optional): Optional parameter 1
             b2 (float, optional): Optional parameter 2
         """
-        if self.is_valid_profile(p):
-            if self.is_valid_item_index(i):
-                match [item, b1, b2]:
-                    case [profile_item.END
-                          | profile_item.LOOP_END
-                          | profile_item.STOP
-                          | profile_item.HEATING_AND_COOLING
-                          | profile_item.HEATING_ONLY
-                          | profile_item.COOLING_ONLY, None, None]:
-                        self._controller._send_command(
-                            f'PROF:EDIT:IINS {p},{i},{item.value}', False)
-                    case [profile_item.HOLD, x,
-                          None] if temperature.is_in_operation_range(self, x):
-                        self._controller._send_command(
-                            f'PROF:EDIT:IINS {p},{i},'
-                            f'{item.value},{float(b1)}', False)
-                    case [profile_item.RPP, x,
-                          None] if temperature.is_in_power_range(self, x):
-                        self._controller._send_command(
-                            f'PROF:EDIT:IINS {p},{i},'
-                            f'{item.value},{float(b1)}', False)
-                    case [profile_item.WAIT, x,
-                          None] if x >= 0.0:
-                        self._controller._send_command(
-                            f'PROF:EDIT:IINS {p},{i},'
-                            f'{item.value},{float(b1)}', False)
-                    case [profile_item.LOOP_BEGIN, x,
-                          None] if x >= 0:
-                        self._controller._send_command(
-                            f'PROF:EDIT:IINS {p},{i},'
-                            f'{item.value},{int(b1)}', False)
-                    case [profile_item.RAMP,
-                          x, y] if (
-                              temperature.is_in_operation_range(self, x)
-                              and temperature.is_in_ramp_rate_range(self, y)):
-                        self._controller._send_command(
-                            f'PROF:EDIT:IINS {p},{i},'
-                            f'{item.value},{float(b1)},{float(b2)}', False)
-                    case [profile_item.PURGE,
-                          x, y] if x >= 0.0 and y > 0.0:
-                        self._controller._send_command(
-                            f'PROF:EDIT:IINS {p},{i},'
-                            f'{item.value},{float(b1)},{float(b2)}', False)
-                    case _:
-                        raise ValueError('Invalid item/parameters')
-            else:
-                raise ValueError('Invalid item index')
-        else:
-            raise ValueError('Invalid profile')
+        pass
 
+    @abstractmethod
     def add_profile_item(self, p: int, item: profile_item,
-                         b1: float = None, b2: float = None):
+                         b1: float = None, b2: float = None) -> None:
         """Adds items to the end of the profile.
 
         Args:
@@ -170,10 +108,10 @@ class profile(command):
             b1 (float, optional): Optional parameter 1
             b2 (float, optional): Optional parameter 2
         """
-        self.insert_profile_item(
-            p, self.get_profile_item_count(p), item, b1, b2)
+        pass
 
-    def get_profile_item(self, p: int, i: int):
+    @abstractmethod
+    def get_profile_item(self, p: int, i: int) -> None:
         """Get the selected item from the selected profile.
         Profiles are zero-indexed, ranging from 0 to 4, inclusive, but
         the default names are one-indexed (i.e. 0 corresponds with
@@ -187,30 +125,11 @@ class profile(command):
         Returns:
             (profile_item, float, float): Profile item tuple
         """
-        if self.is_valid_profile(p):
-            if self.is_valid_item_index(i):
-                item_raw = self._controller._send_command(
-                    f'PROF:EDIT:IRE {p},{i}').split(',')
-                item = profile_item(int(item_raw[0]))
-                b1 = float(item_raw[1]) if (item in [
-                    profile_item.HOLD,
-                    profile_item.RPP,
-                    profile_item.WAIT,
-                    profile_item.LOOP_BEGIN,
-                    profile_item.RAMP,
-                    profile_item.PURGE]) else None
-                b2 = float(item_raw[2]) if (item in [
-                    profile_item.PURGE,
-                    profile_item.RAMP]) else None
+        pass
 
-                return item, b1, b2
-            else:
-                raise ValueError('Invalid item index')
-        else:
-            raise ValueError('Invalid profile')
-
+    @abstractmethod
     def set_profile_item(self, p: int, i: int, item: profile_item = None,
-                         b1: float = None, b2: float = None):
+                         b1: float = None, b2: float = None) -> None:
         """Set the selected item in the selected profile.
         Profiles are zero-indexed, ranging from 0 to 4, inclusive, but
         the default names are one-indexed (i.e. 0 corresponds with
@@ -222,59 +141,10 @@ class profile(command):
             i (int): Selected item index
             item (profile_item): Item instruction type
         """
-        if self.is_valid_profile(p):
-            if self.is_valid_item_index(i):
-                if item is None:
-                    item = self.get_profile_item(p, i)[0]
-                match [item, b1, b2]:
-                    case [profile_item.END
-                          | profile_item.LOOP_END
-                          | profile_item.STOP
-                          | profile_item.HEATING_AND_COOLING
-                          | profile_item.HEATING_ONLY
-                          | profile_item.COOLING_ONLY, None, None]:
-                        self._controller._send_command(
-                            f'PROF:EDIT:IED {p},{i},{item.value}', False)
-                    case [profile_item.HOLD, x,
-                          None] if temperature.is_in_operation_range(self, x):
-                        self._controller._send_command(
-                            f'PROF:EDIT:IED {p},{i},'
-                            f'{item.value},{float(b1)}', False)
-                    case [profile_item.RPP, x,
-                          None] if temperature.is_in_power_range(self, x):
-                        self._controller._send_command(
-                            f'PROF:EDIT:IED {p},{i},'
-                            f'{item.value},{float(b1)}', False)
-                    case [profile_item.WAIT, x,
-                          None] if x >= 0.0:
-                        self._controller._send_command(
-                            f'PROF:EDIT:IED {p},{i},'
-                            f'{item.value},{float(b1)}', False)
-                    case [profile_item.LOOP_BEGIN, x,
-                          None] if x >= 0:
-                        self._controller._send_command(
-                            f'PROF:EDIT:IED {p},{i},'
-                            f'{item.value},{int(b1)}', False)
-                    case [profile_item.RAMP,
-                          x, y] if (
-                              temperature.is_in_operation_range(self, x)
-                              and temperature.is_in_ramp_rate_range(self, y)):
-                        self._controller._send_command(
-                            f'PROF:EDIT:IED {p},{i},'
-                            f'{item.value},{float(b1)},{float(b2)}', False)
-                    case [profile_item.PURGE,
-                          x, y] if x >= 0.0 and y > 0.0:
-                        self._controller._send_command(
-                            f'PROF:EDIT:IED {p},{i},'
-                            f'{item.value},{float(b1)},{float(b2)}', False)
-                    case _:
-                        raise ValueError('Invalid item/parameters')
-            else:
-                raise ValueError('Invalid item index')
-        else:
-            raise ValueError('Invalid profile')
+        pass
 
-    def get_profile_item_count(self, p: int):
+    @abstractmethod
+    def get_profile_item_count(self, p: int) -> int:
         """Get the number of items in the selected profile.
 
         Args:
@@ -286,13 +156,10 @@ class profile(command):
         Returns:
             int: Number of items
         """
-        if self.is_valid_profile(p):
-            return int(self._controller._send_command(
-                f'PROF:EDIT:IC {int(p)}'))
-        else:
-            raise ValueError('Invalid profile')
+        pass
 
-    def get_profile_name(self, p: int):
+    @abstractmethod
+    def get_profile_name(self, p: int) -> str:
         """Get the profile name of the selected profile.
 
         Args:
@@ -304,13 +171,10 @@ class profile(command):
         Returns:
             str: Profile name
         """
-        if self.is_valid_profile(p):
-            return self._controller._send_command(
-                f'PROF:EDIT:GNAM {int(p)}').strip()
-        else:
-            raise ValueError('Invalid profile')
+        pass
 
-    def set_profile_name(self, p: int, name: str):
+    @abstractmethod
+    def set_profile_name(self, p: int, name: str) -> None:
         """Set the profile name of the selected profile.
 
         Args:
@@ -321,16 +185,10 @@ class profile(command):
             ValueError: If name is too long (greater than 15 characters)
             ValueError: If profile is invalid
         """
-        if self.is_valid_profile(p):
-            if len(name) < 15:
-                self._controller._send_command(
-                    f'PROF:EDIT:SNAM {int(p)},"{str(name)}"', False)
-            else:
-                raise ValueError('Name is too long')
-        else:
-            raise ValueError('Invalid profile')
+        pass
 
-    def is_valid_profile(self, p: int):
+    @abstractmethod
+    def is_valid_profile(self, p: int) -> bool:
         """Check if selected profile is valid.
 
         Args:
@@ -339,9 +197,10 @@ class profile(command):
         Returns:
             bool: True if in range, False otherwise
         """
-        return p >= 0 and p < self.PROFILE_NUM
+        pass
 
-    def is_valid_item_index(self, i: int):
+    @abstractmethod
+    def is_valid_item_index(self, i: int) -> bool:
         """Check if selected item index is valid.
 
         Args:
@@ -350,4 +209,4 @@ class profile(command):
         Returns:
             bool: True if in range, False otherwise
         """
-        return i >= 0 and i < self.ITEM_NUM
+        pass

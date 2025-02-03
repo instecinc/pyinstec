@@ -36,11 +36,11 @@ import instec
 class controller_test(unittest.TestCase):
     # Variables for setting up the controller
     MODE = instec.mode.USB      # Connection mode
-    BAUD = 38400                # Baud rate for USB mode
+    BAUD = 9600                 # Baud rate for USB mode
     PORT = 'COM3'               # Port for USB mode
 
     # Constants for testing
-    UPDATE_DELAY = 0.25     # in seconds, so queries don't read old values
+    UPDATE_DELAY = 1.0      # in seconds, so queries don't read old values
     STEP_COUNT = 8          # Number of steps for each TSP loop
     STEP_SIZE = None        # OPTIONAL - Overrides STEP_COUNT and
                             # defines a step size instead
@@ -59,9 +59,11 @@ class controller_test(unittest.TestCase):
 
     def _initialize_controller(self):
         """Initialize and connect to controller using MODE, BAUD, and PORT,
-        then check connection.
+        then check connection. Change the initialized type for _controller
+        to test different controller types (ex. instec.MK2000B,
+        instec.MK2000VCP, etc.)
         """
-        self._controller = instec.MK2000(self.MODE, self.BAUD, self.PORT)
+        self._controller = instec.MK2000B(self.MODE, self.BAUD, self.PORT)
         self._controller.connect()
         self.assertTrue(self._controller.is_connected())
 

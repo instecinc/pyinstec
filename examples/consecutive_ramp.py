@@ -13,7 +13,7 @@ BAUD = 38400                # Baud rate for USB mode
 PORT = 'COM3'               # Port for USB mode
 
 # Initialize controller and connect
-controller = instec.MK2000(MODE, BAUD, PORT)
+controller = instec.MK2000B(MODE, BAUD, PORT)
 controller.connect()
 
 # Define the set of TSP and RT values to use
