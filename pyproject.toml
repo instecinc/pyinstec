@@ -4,13 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "instec"
-version = "1.2.0"
+version = "0.3.9"
 authors = [
   { name="Matthew Chen", email="matthew.chen@instec.com" },
 ]
 description = "A basic implementation of SCPI commands for the MK2000B in Python."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 license = {file = "LICENSE.txt"}
 classifiers = [
     "Programming Language :: Python :: 3",

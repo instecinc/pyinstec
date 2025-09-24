@@ -89,40 +89,40 @@ for i in range(controller.get_profile_item_count(selected_profile)):
     item = controller.get_profile_item(selected_profile, i)
     commands = ('',)
     # Determine item instruction type and select commands accordingly
-    match(item[0]):
-        case instec.profile_item.HOLD:
-            commands = (f'controller.hold({item[1]})',
-                        'pv = controller.get_process_variables()[controller.get_operating_slave()]',
-                        f'while abs(pv - {item[1]}) > {PRECISION}:',
-                        '    pv = controller.get_process_variables()[controller.get_operating_slave()]',)
-        case instec.profile_item.RAMP:
-            commands = (f'controller.ramp({item[1]}, {item[2]})',
-                        'pv = controller.get_process_variables()[controller.get_operating_slave()]',
-                        f'while abs(pv - {item[1]}) > {PRECISION}:',
-                        '    pv = controller.get_process_variables()[controller.get_operating_slave()]',)
-        case instec.profile_item.WAIT:
-            commands = (f'time.sleep({item[1] * 60})',)
-        case instec.profile_item.LOOP_BEGIN:
-            commands = (f'for i{i} in range({int(item[1])}):',)
-        case instec.profile_item.LOOP_END:
-            indent = indent[:-4]
-        case instec.profile_item.PURGE:
-            commands = (f'controller.purge({item[1]}, {item[2]})',
-                        f'time.sleep({item[1] + item[2]})',)
-        case instec.profile_item.STOP:
-            commands = ('controller.stop()',)
-        case instec.profile_item.HEATING_AND_COOLING:
-            commands = ('controller.set_cooling_heating_status(instec.temperature_mode.HEATING_AND_COOLING)',)
-        case instec.profile_item.HEATING_ONLY:
-            commands = ('controller.set_cooling_heating_status(instec.temperature_mode.HEATING_ONLY)',)
-        case instec.profile_item.RPP:
-            controller.get_power()
-            commands = (f'controller.rpp({item[1]})',
-                        'pp = controller.get_power()',
-                        f'while abs(pp - {item[1]}) > {PRECISION / 100.0}:',
-                        '    pp = controller.get_power()',)
-        case instec.profile_item.COOLING_ONLY:
-            commands = ('controller.set_cooling_heating_status(instec.temperature_mode.COOLING_ONLY)',)
+
+    if item[0] == instec.profile_item.HOLD:
+        commands = (f'controller.hold({item[1]})',
+                    'pv = controller.get_process_variables()[controller.get_operating_slave()]',
+                    f'while abs(pv - {item[1]}) > {PRECISION}:',
+                    '    pv = controller.get_process_variables()[controller.get_operating_slave()]',)
+    elif item[0] == instec.profile_item.RAMP:
+        commands = (f'controller.ramp({item[1]}, {item[2]})',
+                    'pv = controller.get_process_variables()[controller.get_operating_slave()]',
+                    f'while abs(pv - {item[1]}) > {PRECISION}:',
+                    '    pv = controller.get_process_variables()[controller.get_operating_slave()]',)
+    elif item[0] == instec.profile_item.WAIT:
+        commands = (f'time.sleep({item[1] * 60})',)
+    elif item[0] == instec.profile_item.LOOP_BEGIN:
+        commands = (f'for i{i} in range({int(item[1])}):',)
+    elif item[0] == instec.profile_item.LOOP_END:
+        indent = indent[:-4]
+    elif item[0] == instec.profile_item.PURGE:
+        commands = (f'controller.purge({item[1]}, {item[2]})',
+                    f'time.sleep({item[1] + item[2]})',)
+    elif item[0] == instec.profile_item.STOP:
+        commands = ('controller.stop()',)
+    elif item[0] == instec.profile_item.HEATING_AND_COOLING:
+        commands = ('controller.set_cooling_heating_status(instec.temperature_mode.HEATING_AND_COOLING)',)
+    elif item[0] == instec.profile_item.HEATING_ONLY:
+        commands = ('controller.set_cooling_heating_status(instec.temperature_mode.HEATING_ONLY)',)
+    elif item[0] == instec.profile_item.RPP:
+        controller.get_power()
+        commands = (f'controller.rpp({item[1]})',
+                    'pp = controller.get_power()',
+                    f'while abs(pp - {item[1]}) > {PRECISION / 100.0}:',
+                    '    pp = controller.get_power()',)
+    elif item[0] == instec.profile_item.COOLING_ONLY:
+        commands = ('controller.set_cooling_heating_status(instec.temperature_mode.COOLING_ONLY)',)
 
     # Write commands to file
     for command in commands:

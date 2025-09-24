@@ -132,13 +132,12 @@ class MK2000VCP(command, temperature):
         return self._parse_vcp_system_status(status)
 
     def _parse_vcp_system_status(self, status: int) -> system_status:
-        match(status):
-            case 5:
-                return system_status.STOP
-            case 21:
-                return system_status.RPP
-            case _:
-                return system_status(status)
+        if status == 5:
+            return system_status.STOP
+        elif status == 21:
+            return system_status.RPP
+        else:
+            return system_status(status)
 
     def get_serial_number(self):
         return self._controller._send_command('TEMP:SNUM?').strip()

@@ -326,49 +326,62 @@ class MK2000B(command, temperature, pid, profile):
                             b1: float = None, b2: float = None):
         if self.is_valid_profile(p):
             if self.is_valid_item_index(i):
-                match [item, b1, b2]:
-                    case [profile_item.END
-                          | profile_item.LOOP_END
-                          | profile_item.STOP
-                          | profile_item.HEATING_AND_COOLING
-                          | profile_item.HEATING_ONLY
-                          | profile_item.COOLING_ONLY, None, None]:
-                        self._controller._send_command(
-                            f'PROF:EDIT:IINS {p},{i},{item.value}', False)
-                    case [profile_item.HOLD, x,
-                          None] if self.is_in_operation_range(x):
-                        self._controller._send_command(
-                            f'PROF:EDIT:IINS {p},{i},'
-                            f'{item.value},{float(b1)}', False)
-                    case [profile_item.RPP, x,
-                          None] if self.is_in_power_range(x):
-                        self._controller._send_command(
-                            f'PROF:EDIT:IINS {p},{i},'
-                            f'{item.value},{float(b1)}', False)
-                    case [profile_item.WAIT, x,
-                          None] if x >= 0.0:
-                        self._controller._send_command(
-                            f'PROF:EDIT:IINS {p},{i},'
-                            f'{item.value},{float(b1)}', False)
-                    case [profile_item.LOOP_BEGIN, x,
-                          None] if x >= 0:
-                        self._controller._send_command(
-                            f'PROF:EDIT:IINS {p},{i},'
-                            f'{item.value},{int(b1)}', False)
-                    case [profile_item.RAMP,
-                          x, y] if (
-                              self.is_in_operation_range(x)
-                              and self.is_in_ramp_rate_range(y)):
-                        self._controller._send_command(
-                            f'PROF:EDIT:IINS {p},{i},'
-                            f'{item.value},{float(b1)},{float(b2)}', False)
-                    case [profile_item.PURGE,
-                          x, y] if x >= 0.0 and y > 0.0:
-                        self._controller._send_command(
-                            f'PROF:EDIT:IINS {p},{i},'
-                            f'{item.value},{float(b1)},{float(b2)}', False)
-                    case _:
-                        raise ValueError('Invalid item/parameters')
+                if ((item == profile_item.END
+                        | item == profile_item.LOOP_END
+                        | item == profile_item.STOP
+                        | item == profile_item.HEATING_AND_COOLING
+                        | item == profile_item.HEATING_ONLY
+                        | item == profile_item.COOLING_ONLY)
+                        and b1 is None
+                        and b2 is None):
+                    self._controller._send_command(
+                        f'PROF:EDIT:IINS {p},{i},{item.value}', False)
+                elif (item is profile_item.HOLD
+                      and b1 is not None
+                      and b2 is None
+                      and self.is_in_operation_range(b1)):
+                    self._controller._send_command(
+                        f'PROF:EDIT:IINS {p},{i},'
+                        f'{item.value},{float(b1)}', False)
+                elif (item is profile_item.RPP
+                      and b1 is not None
+                      and b2 is None
+                      and self.is_in_power_range(b1)):
+                    self._controller._send_command(
+                        f'PROF:EDIT:IINS {p},{i},'
+                        f'{item.value},{float(b1)}', False)
+                elif (item is profile_item.WAIT
+                      and b1 is not None
+                      and b2 is None
+                      and b1 >= 0.0):
+                    self._controller._send_command(
+                        f'PROF:EDIT:IINS {p},{i},'
+                        f'{item.value},{float(b1)}', False)
+                elif (item is profile_item.LOOP_BEGIN
+                      and b1 is not None
+                      and b2 is None
+                      and b1 >= 0):
+                    self._controller._send_command(
+                        f'PROF:EDIT:IINS {p},{i},'
+                        f'{item.value},{int(b1)}', False)
+                elif (item is profile_item.RAMP
+                      and b1 is not None
+                      and b2 is not None
+                      and self.is_in_operation_range(b1)
+                      and self.is_in_ramp_rate_range(b2)):
+                    self._controller._send_command(
+                        f'PROF:EDIT:IINS {p},{i},'
+                        f'{item.value},{float(b1)},{float(b2)}', False)
+                elif (item is profile_item.PURGE
+                      and b1 is not None
+                      and b2 is not None
+                      and b1 >= 0.0
+                      and b2 >= 0.0):
+                    self._controller._send_command(
+                        f'PROF:EDIT:IINS {p},{i},'
+                        f'{item.value},{float(b1)},{float(b2)}', False)
+                else:
+                    raise ValueError('Invalid item/parameters')
             else:
                 raise ValueError('Invalid item index')
         else:
@@ -408,49 +421,62 @@ class MK2000B(command, temperature, pid, profile):
             if self.is_valid_item_index(i):
                 if item is None:
                     item = self.get_profile_item(p, i)[0]
-                match [item, b1, b2]:
-                    case [profile_item.END
-                          | profile_item.LOOP_END
-                          | profile_item.STOP
-                          | profile_item.HEATING_AND_COOLING
-                          | profile_item.HEATING_ONLY
-                          | profile_item.COOLING_ONLY, None, None]:
-                        self._controller._send_command(
-                            f'PROF:EDIT:IED {p},{i},{item.value}', False)
-                    case [profile_item.HOLD, x,
-                          None] if self.is_in_operation_range(x):
-                        self._controller._send_command(
-                            f'PROF:EDIT:IED {p},{i},'
-                            f'{item.value},{float(b1)}', False)
-                    case [profile_item.RPP, x,
-                          None] if self.is_in_power_range(x):
-                        self._controller._send_command(
-                            f'PROF:EDIT:IED {p},{i},'
-                            f'{item.value},{float(b1)}', False)
-                    case [profile_item.WAIT, x,
-                          None] if x >= 0.0:
-                        self._controller._send_command(
-                            f'PROF:EDIT:IED {p},{i},'
-                            f'{item.value},{float(b1)}', False)
-                    case [profile_item.LOOP_BEGIN, x,
-                          None] if x >= 0:
-                        self._controller._send_command(
-                            f'PROF:EDIT:IED {p},{i},'
-                            f'{item.value},{int(b1)}', False)
-                    case [profile_item.RAMP,
-                          x, y] if (
-                              self.is_in_operation_range(x)
-                              and self.is_in_ramp_rate_range(y)):
-                        self._controller._send_command(
-                            f'PROF:EDIT:IED {p},{i},'
-                            f'{item.value},{float(b1)},{float(b2)}', False)
-                    case [profile_item.PURGE,
-                          x, y] if x >= 0.0 and y > 0.0:
-                        self._controller._send_command(
-                            f'PROF:EDIT:IED {p},{i},'
-                            f'{item.value},{float(b1)},{float(b2)}', False)
-                    case _:
-                        raise ValueError('Invalid item/parameters')
+                elif ((item == profile_item.END
+                        | item == profile_item.LOOP_END
+                        | item == profile_item.STOP
+                        | item == profile_item.HEATING_AND_COOLING
+                        | item == profile_item.HEATING_ONLY
+                        | item == profile_item.COOLING_ONLY)
+                        and b1 is None
+                        and b2 is None):
+                    self._controller._send_command(
+                        f'PROF:EDIT:IED {p},{i},{item.value}', False)
+                elif (item is profile_item.HOLD
+                      and b1 is not None
+                      and b2 is None
+                      and self.is_in_operation_range(b1)):
+                    self._controller._send_command(
+                        f'PROF:EDIT:IED {p},{i},'
+                        f'{item.value},{float(b1)}', False)
+                elif (item is profile_item.RPP
+                      and b1 is not None
+                      and b2 is None
+                      and self.is_in_power_range(b1)):
+                    self._controller._send_command(
+                        f'PROF:EDIT:IED {p},{i},'
+                        f'{item.value},{float(b1)}', False)
+                elif (item is profile_item.WAIT
+                      and b1 is not None
+                      and b2 is None
+                      and b1 >= 0.0):
+                    self._controller._send_command(
+                        f'PROF:EDIT:IED {p},{i},'
+                        f'{item.value},{float(b1)}', False)
+                elif (item is profile_item.LOOP_BEGIN
+                      and b1 is not None
+                      and b2 is None
+                      and b1 >= 0):
+                    self._controller._send_command(
+                        f'PROF:EDIT:IED {p},{i},'
+                        f'{item.value},{int(b1)}', False)
+                elif (item is profile_item.RAMP
+                      and b1 is not None
+                      and b2 is not None
+                      and self.is_in_operation_range(b1)
+                      and self.is_in_ramp_rate_range(b2)):
+                    self._controller._send_command(
+                        f'PROF:EDIT:IED {p},{i},'
+                        f'{item.value},{float(b1)},{float(b2)}', False)
+                elif (item is profile_item.PURGE
+                      and b1 is not None
+                      and b2 is not None
+                      and b1 >= 0.0
+                      and b2 >= 0.0):
+                    self._controller._send_command(
+                        f'PROF:EDIT:IED {p},{i},'
+                        f'{item.value},{float(b1)},{float(b2)}', False)
+                else:
+                    raise ValueError('Invalid item/parameters')
             else:
                 raise ValueError('Invalid item index')
         else:
