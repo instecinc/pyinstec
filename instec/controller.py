@@ -99,7 +99,7 @@ class controller:
                     model = data[1]
                     serial_num = data[2]
 
-                    if company == 'Instec' and model.startswith('MK2000'):
+                    if company == 'Instec' and model.startswith(('MK2000', 'MAGNET')):
                         controller.usb.append((serial_num, port.device))
                 except Exception:
                     continue
