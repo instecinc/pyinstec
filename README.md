@@ -1,3 +1,5 @@
+# MAGNET CONTROLLER COMPATIBLE VERSION - 1.2.post1
+
 # PyInstec - The Instec Python SCPI Command Library
 
 PyInstec is an implementation of the SCPI commands used to interact with Instec devices such as the MK2000B.
