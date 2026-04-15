@@ -2,6 +2,7 @@
 with the MK2000/MK2000B controller itself.
 """
 
+import time
 import serial
 from serial.tools import list_ports
 import socket
@@ -44,37 +45,39 @@ class controller:
         Returns:
             List: List of tuples in the form (serial_num, ip)
         """
-        with (
-            socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as receiver,
-                socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sender):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.settimeout(connection.TIMEOUT)
+        sock.bind(("", 50291))
+        sock.sendto(bytes.fromhex('73C4000001'), ('255.255.255.255', 50290))
 
-            receiver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            receiver.bind((controller._get_eth_addr(), 50291))
-            receiver.settimeout(connection.TIMEOUT)
+        controller.ethernet = []
 
-            sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            sender.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            sender.sendto(
-                bytes.fromhex('73C4000001'),
-                ('255.255.255.255', 50290))
-
-            controller.ethernet = []
+        start_time = time.time()
+        try:
             while True:
-                try:
-                    buffer, addr = receiver.recvfrom(1024)
-                    buffer = buffer.decode()
-                    data = buffer.strip().split(':')
-                    model = data[0]
-                    serial_num = data[1]
-                    if model.startswith('IoT_MK#MK2000'):
-                        controller.ethernet.append((serial_num, addr[0]))
-                except socket.error:
-                    break
-                except Exception as error:
-                    raise RuntimeError(
-                        'Did not receive UDP response') from error
+                buffer, addr = sock.recvfrom(1024)
+                buffer = buffer.decode(errors='ignore')
+                data = buffer.strip().split(':')
 
-            return controller.ethernet
+                if len(data) < 2:
+                    continue
+
+                model, serial_num = data[0], data[1]
+
+                if model.startswith(('IoT_MK#MK2000', 'IoT_MK#MAGNET')):
+                    controller.ethernet.append((serial_num, addr[0]))
+
+                if time.time() - start_time > connection.TIMEOUT:
+                    break
+
+        except socket.timeout:
+            pass
+
+        sock.close()
+
+        return controller.ethernet
 
     def get_usb_controllers():
         """Get all controllers connected via USB.
@@ -85,24 +88,22 @@ class controller:
         ports = list_ports.comports()
         controller.usb = []
         for port in ports:
-            with serial.Serial(port.device,
-                               timeout=connection.TIMEOUT) as conn:
-                try:
-                    conn.write(str.encode('*IDN?\r\n'))
+            try:
+                with serial.Serial(port.device,
+                                   timeout=connection.TIMEOUT,
+                                   write_timeout=connection.TIMEOUT) as conn:
+                    conn.write('*IDN?\r\n'.encode())
+                    buffer = conn.read_until('\r\n'.encode())
 
-                    buffer = conn.readline().decode()
-                    while not buffer.endswith('\r\n'):
-                        buffer += conn.readline().decode()
-
-                    data = buffer.strip().split(',')
+                    data = buffer.decode().strip().split(',')
                     company = data[0]
                     model = data[1]
                     serial_num = data[2]
 
                     if company == 'Instec' and model.startswith(('MK2000', 'MAGNET')):
                         controller.usb.append((serial_num, port.device))
-                except Exception:
-                    continue
+            except Exception:
+                continue
 
         return controller.usb
 

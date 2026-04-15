@@ -1,4 +1,4 @@
-# MAGNET CONTROLLER COMPATIBLE VERSION - 1.2.post1
+# MAGNET CONTROLLER COMPATIBLE VERSION - 1.2.post3
 
 # PyInstec - The Instec Python SCPI Command Library
 
